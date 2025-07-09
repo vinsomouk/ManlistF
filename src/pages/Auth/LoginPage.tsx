@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../../components/services/auth';
-import '../../styles/Login.css'; 
+import '../../styles/Auth.css';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -14,10 +14,7 @@ const LoginPage = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,66 +24,71 @@ const LoginPage = () => {
 
     try {
       const result = await login(formData.email, formData.password);
-      
       if (result.user) {
-        // Redirection après connexion réussie
         navigate('/');
       } else {
         setError('Identifiants incorrects');
       }
     } catch (err) {
       setError('Erreur de connexion. Veuillez réessayer.');
-      console.error('Login error:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <h2>Connexion à Manlist</h2>
-        
-        {error && <div className="error-message">{error}</div>}
+    <div className="auth-container">
+      <div className="auth-video-section">
+        <video autoPlay muted loop className="auth-background-video">
+          <source src="/assets/videos/auth-bg.mp4" type="video/mp4" />
+        </video>
+      </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="votre@email.com"
-            />
+      <div className="auth-form-section">
+        <div className="auth-form-container">
+          <div className="auth-form-header">
+            <h2>Connexion</h2>
           </div>
+          
+          {error && <div className="error-message">{error}</div>}
 
-          <div className="form-group">
-            <label htmlFor="password">Mot de passe</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              placeholder="••••••••"
-            />
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="auth-input"
+                placeholder="Email"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="auth-input"
+                placeholder="Mot de passe"
+                required
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              className="auth-button"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Connexion...' : 'Se connecter'}
+            </button>
+          </form>
+
+          <div className="auth-form-footer">
+            <p>Pas de compte ? <a href="/register">S'inscrire</a></p>
           </div>
-
-          <button 
-            type="submit" 
-            className="login-button"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Connexion en cours...' : 'Se connecter'}
-          </button>
-        </form>
-
-        <div className="login-footer">
-          <p>Pas encore de compte ? <a href="/register">S'inscrire</a></p>
         </div>
       </div>
     </div>

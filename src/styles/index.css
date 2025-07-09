@@ -1,5 +1,5 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Berkshire Swash', cursive, system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -13,6 +13,19 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  overflow-x: hidden; /* Empêche le débordement horizontal */
+}
+
+#root {
+  display: block; /* Important pour éviter les contraintes flex */
+}
+
 a {
   font-weight: 500;
   color: #ffffff;
@@ -24,10 +37,12 @@ a:hover {
 
 body {
   margin: 0;
+  padding: 0;
   display: flex;
   place-items: center;
-  min-width: 320px;
+  min-width: 100%;
   min-height: 100vh;
+  overflow: hidden;
 }
 
 h1 {
@@ -57,7 +72,7 @@ button:focus-visible {
 @media (prefers-color-scheme: light) {
   :root {
     color: #ffffff;
-    background-color: #000000;
+    background-color: #525050;
   }
   a:hover {
     color: #747bff;

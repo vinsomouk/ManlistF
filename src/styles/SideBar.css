@@ -1,44 +1,43 @@
-/* src/components/Sidebar.css */
 .sidebar {
-    width: 300px;
-    padding: 2rem;
-    background: #000000;
-    border-right: 1px solid #ddd;
-    height: 100vh;
-    position: sticky;
-    top: 0;
-    overflow-y: auto;
+  width: 245px;
+  height: calc(100vh - 98px); /* Hauteur totale - header */
+  position: fixed;
+  left: 0;
+  top: 98px; /* En dessous du header */
+  background: #34495e;
+  padding: 1.5rem;
+  overflow-y: auto;
+  z-index: 900;
 }
 
-.search-container {
-    margin-bottom: 2rem;
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.search-container input {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
+.search-box input {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 4px;
+  border: none;
+  background: #2c3e50;
+  color: white;
 }
 
-.typing-indicator {
-    font-size: 0.8rem;
-    color: #666;
-    margin-top: 0.5rem;
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.filters {
-    margin-top: 2rem;
-}
-
-.filter-group {
-    margin-top: 1rem;
-}
-
-.filter-group label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
+.refresh-btn:hover {
+  background: #2980b9;
 }

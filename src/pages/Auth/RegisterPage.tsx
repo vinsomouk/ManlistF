@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { register } from '../../components/services/auth';
-import '../../styles/Register.css';
+import '../../styles/Auth.css';
 
 interface FormData {
   email: string;
@@ -25,13 +25,10 @@ const RegisterPage = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const validateForm = (): boolean => {
+  const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.email.trim()) {
@@ -62,7 +59,6 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
 
     setIsLoading(true);
@@ -70,103 +66,100 @@ const RegisterPage = () => {
 
     try {
       await register(formData.email, formData.nickname, formData.password);
-      setMessage('Inscription réussie ! Redirection...');
-      setTimeout(() => navigate('/login'), 2000);
+      setMessage('Inscription réussie !');
+      setTimeout(() => navigate('/login'), 1500);
     } catch (error) {
-      if (error instanceof Error) {
-        try {
-          const backendErrors = JSON.parse(error.message);
-          setErrors(backendErrors);
-        } catch {
-          setErrors({
-            general: "Erreur lors de l'inscription. Veuillez réessayer."
-          });
-        }
-      }
+      setErrors({ general: "Erreur lors de l'inscription" });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="register-container">
-      <h2>Créer un compte</h2>
-      
-      {message && <div className="success-message">{message}</div>}
-      {errors.general && <div className="error-message">{errors.general}</div>}
+    <div className="auth-container">
+      <div className="auth-video-section">
+        <video autoPlay muted loop className="auth-background-video">
+          <source src="/assets/videos/auth-bg.mp4" type="video/mp4" />
+        </video>
+      </div>
 
-      <form onSubmit={handleSubmit} noValidate>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className={errors.email ? 'error-input' : ''}
-            required
-          />
-          {errors.email && <span className="error-text">{errors.email}</span>}
+      <div className="auth-form-section">
+        <div className="auth-form-container">
+          <div className="auth-form-header">
+            <h2>Inscription</h2>
+          </div>
+          
+          {message && <div className="success-message">{message}</div>}
+          {errors.general && <div className="error-message">{errors.general}</div>}
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`auth-input ${errors.email ? 'error' : ''}`}
+                placeholder="Email"
+                required
+              />
+              {errors.email && <span className="error-text">{errors.email}</span>}
+            </div>
+
+            <div className="form-group">
+              <input
+                type="text"
+                name="nickname"
+                value={formData.nickname}
+                onChange={handleChange}
+                className={`auth-input ${errors.nickname ? 'error' : ''}`}
+                placeholder="Pseudo"
+                required
+              />
+              {errors.nickname && <span className="error-text">{errors.nickname}</span>}
+            </div>
+
+            <div className="form-group">
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className={`auth-input ${errors.password ? 'error' : ''}`}
+                placeholder="Mot de passe"
+                required
+              />
+              {errors.password && <span className="error-text">{errors.password}</span>}
+            </div>
+
+            <div className="form-group">
+              <input
+                type="password"
+                name="passwordConfirm"
+                value={formData.passwordConfirm}
+                onChange={handleChange}
+                className={`auth-input ${errors.passwordConfirm ? 'error' : ''}`}
+                placeholder="Confirmer le mot de passe"
+                required
+              />
+              {errors.passwordConfirm && (
+                <span className="error-text">{errors.passwordConfirm}</span>
+              )}
+            </div>
+
+            <button 
+              type="submit" 
+              className="auth-button"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Inscription...' : "S'inscrire"}
+            </button>
+          </form>
+
+          <div className="auth-form-footer">
+            <p>Déjà un compte ? <a href="/login">Se connecter</a></p>
+          </div>
         </div>
-
-        <div className="form-group">
-          <label htmlFor="nickname">Pseudo</label>
-          <input
-            type="text"
-            id="nickname"
-            name="nickname"
-            value={formData.nickname}
-            onChange={handleChange}
-            className={errors.nickname ? 'error-input' : ''}
-            required
-            minLength={3}
-          />
-          {errors.nickname && <span className="error-text">{errors.nickname}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="password">Mot de passe</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className={errors.password ? 'error-input' : ''}
-            required
-            minLength={6}
-          />
-          {errors.password && <span className="error-text">{errors.password}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="passwordConfirm">Confirmer le mot de passe</label>
-          <input
-            type="password"
-            id="passwordConfirm"
-            name="passwordConfirm"
-            value={formData.passwordConfirm}
-            onChange={handleChange}
-            className={errors.passwordConfirm ? 'error-input' : ''}
-            required
-          />
-          {errors.passwordConfirm && (
-            <span className="error-text">{errors.passwordConfirm}</span>
-          )}
-        </div>
-
-        <button 
-          type="submit" 
-          className="submit-button"
-          disabled={isLoading}
-        >
-          {isLoading ? 'Inscription en cours...' : 'S\'inscrire'}
-        </button>
-      </form>
-
-      <div className="login-link">
-        Déjà un compte ? <a href="/login">Se connecter</a>
       </div>
     </div>
   );

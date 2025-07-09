@@ -1,8 +1,10 @@
 /* ============ LAYOUT PRINCIPAL ============ */
 .anime-app-container {
-  display: flex;
-  min-height: 100vh;
-  background-color: #f8f9fa;
+  margin-left: 245px; /* Largeur sidebar */
+  margin-top: 98px; /* Hauteur header */
+  padding: 2rem;
+  min-height: calc(100vh - 98px);
+  overflow-y: auto; /* Scroll seulement ici */
 }
 
 .sidebar-container {
@@ -20,6 +22,7 @@
   flex: 1;
   padding: 2rem;
   margin-left: 280px;
+  overflow: visible;
 }
 
 .page-title {
@@ -225,3 +228,43 @@
     font-size: 1.5rem;
   }
 }
+
+/* Nouveaux styles pour les catégories */
+.category-tabs {
+  display: flex;
+  gap: 0.8rem;
+  margin: 0 1rem 2rem;
+  padding-bottom: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none; /* Cache la scrollbar sur Firefox */
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none; /* Cache la scrollbar sur Chrome/Safari */
+}
+
+.category-tab {
+  padding: 0.6rem 1.2rem;
+  white-space: nowrap;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.category-tab.active {
+  background: #3498db;
+  color: white;
+}
+
+.category-tab:hover:not(.active) {
+  background: #e0e0e0;
+}
+
+.category-tab:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+

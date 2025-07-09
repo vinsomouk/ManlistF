@@ -1,0 +1,68 @@
+.header-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100vw; /* Utilisation de viewport width */
+  max-width: 100%; /* Sécurité supplémentaire */
+  height: 98px;
+  background: #2c3e50;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box; /* Le padding est inclus dans la largeur */
+}
+
+.header-nav {
+  display: flex;
+  gap: 2rem;
+  height: 100%;
+  align-items: flex-end;
+  padding-bottom: 1rem;
+  flex-wrap: wrap; /* Permet le retour à la ligne si nécessaire */
+}
+
+.header-nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background 0.2s;
+  white-space: nowrap; /* Empêche le texte de se couper */
+}
+
+.header-nav a:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.auth-links {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Version responsive pour petits écrans */
+@media (max-width: 768px) {
+  .header-container {
+    height: auto;
+    flex-direction: column;
+    padding: 1rem;
+  }
+  
+  .header-nav {
+    width: 100%;
+    justify-content: center;
+    padding-bottom: 0.5rem;
+    gap: 1rem;
+  }
+  
+  .auth-links {
+    width: 100%;
+    justify-content: center;
+    padding-top: 0.5rem;
+  }
+}
