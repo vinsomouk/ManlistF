@@ -1,6 +1,6 @@
-import '../styles/Forum.css'; 
+import '../styles/App.css'
 
-function Forum() {
+function AnimesInformations () {
 
   return (
         <div>
@@ -8,7 +8,7 @@ function Forum() {
             <h1>Forum Page</h1>
         </div>
     );
-    
+
 }
 
-export default Forum
+export default AnimesInformations

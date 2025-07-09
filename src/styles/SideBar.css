@@ -1,0 +1,44 @@
+/* src/components/Sidebar.css */
+.sidebar {
+    width: 300px;
+    padding: 2rem;
+    background: #000000;
+    border-right: 1px solid #ddd;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+}
+
+.search-container {
+    margin-bottom: 2rem;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.typing-indicator {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 0.5rem;
+}
+
+.filters {
+    margin-top: 2rem;
+}
+
+.filter-group {
+    margin-top: 1rem;
+}
+
+.filter-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
