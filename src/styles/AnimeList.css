@@ -1,7 +1,7 @@
 /* ============ LAYOUT PRINCIPAL ============ */
 .anime-app-container {
-  margin-left: 260px;
-  margin-top: 70px;
+  margin-left: 245px;
+  margin-top: 98px;
   padding: 1.5rem; /* Réduit de 2rem */
   min-height: calc(100vh - 98px);
 }
@@ -27,7 +27,7 @@
   height: 100%; /* Prend toute la hauteur de la cellule */
   display: flex;
   flex-direction: column;
-  background: rgb(0, 0, 0);
+  background: white;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -63,8 +63,7 @@
   font-size: 0.95rem;
   margin-bottom: 0.5rem;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2; 
+  -webkit-line-clamp: 2; /* Limite à 2 lignes */
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.3;
@@ -91,40 +90,4 @@
   .anime-card-image-container {
     flex-basis: 150px;
   }
-}
-
-/* Infinite scroll styles */
-.loading-indicator {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: center;
-  padding: 2rem;
-  height: 60px;
-}
-
-.loading-spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  border-radius: 50%;
-  border-top: 4px solid #3498db;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Optimisation des cartes */
-.anime-card-image-container {
-  height: 180px;
-  overflow: hidden;
-}
-
-.anime-card-content {
-  padding: 12px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
 }

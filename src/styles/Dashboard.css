@@ -1,0 +1,31 @@
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.dashboard-content {
+  display: flex;
+  flex: 1;
+  margin-top: 98px; /* Hauteur du header */
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 280px; /* Largeur de la sidebar */
+  padding: 2rem;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 98px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-content {
+    flex-direction: column;
+  }
+  
+  .main-content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+}

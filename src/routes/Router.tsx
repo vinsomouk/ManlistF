@@ -8,6 +8,7 @@ import Profile from '../pages/User/Profile';
 import ListDashboard from '../pages/User/ListDashboard';
 
 
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -32,7 +33,8 @@ const router = createBrowserRouter([
   {
     path: '/lists',
     element: <ListDashboard />,
-  }
+  },
+  
 ]);
 
 export default router;
