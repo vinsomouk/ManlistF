@@ -84,7 +84,6 @@ const AnimeList = () => {
   return (
     <div className="anime-app-container">
       <Sidebar 
-        onRefresh={handleRefresh}
         onSearch={handleSearch}
       />
       
@@ -113,27 +112,28 @@ const AnimeList = () => {
           <>
             <div className="anime-grid">
               {animes.map(anime => (
-                <div key={`${anime.id}-${searchQuery}`} className="anime-card">
-                  {anime.coverImage?.large ? (
-                    <img 
-                      className="anime-card-image" 
-                      src={anime.coverImage.large} 
-                      alt={anime.title?.romaji || 'Cover'} 
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="anime-card-placeholder">
-                      <span>No Image</span>
-                    </div>
-                  )}
-                  <div className="anime-card-content">
-                    <h3 className="anime-title">{anime.title?.romaji || 'Titre inconnu'}</h3>
-                    <div className="anime-meta">
-                      <span className="anime-score">⭐ {anime.averageScore || 'N/A'}</span>
-                      <p className="anime-genres">{anime.genres?.join(' • ') || 'Genres non disponibles'}</p>
-                    </div>
-                  </div>
-                </div>
+                <div className="anime-card">
+  <div className="anime-card-image-container">
+    {anime.coverImage?.large ? (
+      <img 
+        className="anime-card-image" 
+        src={anime.coverImage.large} 
+        alt={anime.title?.romaji || 'Cover'} 
+      />
+    ) : (
+      <div className="anime-card-placeholder">
+        <span>No Image</span>
+      </div>
+    )}
+  </div>
+  <div className="anime-card-content">
+    <h3 className="anime-title">{anime.title?.romaji || 'Titre inconnu'}</h3>
+    <div className="anime-meta">
+      <span className="anime-score">⭐ {anime.averageScore || 'N/A'}</span>
+      <p className="anime-genres">{anime.genres?.join(' • ') || 'Genres non disponibles'}</p>
+    </div>
+  </div>
+</div>
               ))}
             </div>
 
