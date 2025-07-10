@@ -4,7 +4,7 @@
   position: fixed;
   left: 0;
   top: 98px; /* En dessous du header */
-  background: #34495e;
+  background: #000000;
   padding: 1.5rem;
   overflow-y: auto;
   z-index: 900;

@@ -6,7 +6,7 @@
   width: 100vw; /* Utilisation de viewport width */
   max-width: 100%; /* Sécurité supplémentaire */
   height: 98px;
-  background: #2c3e50;
+  background: #000000;
   display: flex;
   justify-content: space-between;
   align-items: center;
