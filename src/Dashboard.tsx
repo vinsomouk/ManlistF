@@ -15,7 +15,6 @@ const Dashboard = () => {
       <div className="dashboard-content">
         <Sidebar 
           onSearch={handleSearch}
-          
         />
         
         <main className="main-content">
