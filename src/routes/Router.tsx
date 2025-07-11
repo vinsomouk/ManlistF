@@ -12,7 +12,7 @@ import ListDashboard from '../pages/User/ListDashboard';
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Dashboard />, // Dashboard comme page racine
+    element: <Dashboard />, 
   },
   {
     path: '/login',

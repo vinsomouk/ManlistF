@@ -119,7 +119,13 @@ export const fetchPopularAnime = async (
       })
     });
 
-    const result = await response.json();
+    
+    console.log('Response:', response); // Log de la réponse
+if (!response.ok) {
+  throw new Error(`HTTP error! status: ${response.status}`);
+}
+const result = await response.json();
+console.log('Result:', result); // Log du résultat
 
     if (result.errors) {
       throw new Error(result.errors[0]?.message || 'GraphQL error');
