@@ -9,68 +9,74 @@ const AnimeList = () => {
   const [animes, setAnimes] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [initialLoad, setInitialLoad] = useState(true);
 
-  // Fonction de chargement
-  const loadData = useCallback(async () => {
-    setLoading(true); // Commence le chargement
-    setError(null); // Réinitialise l'erreur
-    try {
-      console.log(`Chargement page ${page}...`); // Debug
-      const { data, pageInfo } = await fetchPopularAnime({
-        page,
-        perPage: 20,
-        search: searchQuery || undefined
-      });
+  // Fonction optimisée pour la recherche
+  const handleSearch = useCallback(async (query: string) => {
+  console.log('Lancement recherche avec:', query);
+  setSearchQuery(query);
+  setLoading(true);
+  setError(null);
 
-      console.log('Données reçues:', data); // Debug
+  try {
+    const { data } = await fetchPopularAnime({
+      page: 1,
+      perPage: 20,
+      search: query.trim() || undefined // Important: undefined plutôt que chaîne vide
+    });
+    
+    setAnimes(data || []);
+  } catch (err) {
+    console.error('Erreur lors de la recherche:', err);
+    setError('Erreur de recherche - voir console');
+    setAnimes([]);
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
-      setAnimes(prev => {
-        // Évite les doublons
-        const newItems = data?.filter(anime => 
-          !prev.some(a => a.id === anime.id)
-        ) || [];
-        return [...prev, ...newItems];
-      });
+  // Effet pour le chargement initial
+  useEffect(() => {
+    const loadInitialData = async () => {
+      if (initialLoad) {
+        console.log('[AnimeList] Chargement initial');
+        setLoading(true);
+        try {
+          const { data } = await fetchPopularAnime({
+            page: 1,
+            perPage: 20
+          });
+          console.log('[AnimeList] Données initiales reçues:', data?.length || 0);
+          setAnimes(data || []);
+        } catch (err) {
+          console.error('[AnimeList] Erreur chargement initial:', err);
+          setError('Erreur au chargement initial. Voir la console.');
+        } finally {
+          setLoading(false);
+          setInitialLoad(false);
+        }
+      }
+    };
 
-      setHasMore(pageInfo?.hasNextPage ?? false);
-      setError(null);
-    } catch (err) {
-      console.error('Erreur:', err); // Debug
-      setError(err instanceof Error ? err.message : 'Erreur de chargement');
-      setHasMore(false); // Pas de pages supplémentaires si une erreur se produit
-    } finally {
-      setLoading(false); // Fin du chargement
+    loadInitialData();
+  }, [initialLoad]);
+
+  // Réinitialisation quand la recherche est vide
+  useEffect(() => {
+    if (searchQuery === '' && !initialLoad) {
+      console.log('[AnimeList] Recherche vide, réinitialisation');
+      handleSearch('');
     }
-  }, [page, searchQuery]);
-
- useEffect(() => {
-  loadData();
-}, [searchQuery]); // Recharge les données lorsque la requête de recherche change
-
-useEffect(() => {
-  console.log(`Page actuelle: ${page}`); // Debug
-  loadData(); // Recharge les données lorsque la page change
-}, [page]);
- // Recharge les données lorsque la requête de recherche change
-
-  // Fonction pour charger la page suivante
-  const loadMore = () => {
-    console.log('Chargement de la page suivante...');
-    if (!loading && hasMore) {
-      setPage(prev => prev + 1); // Charge la page suivante
-    }
-  };
+  }, [searchQuery, initialLoad, handleSearch]);
 
   return (
     <div className="anime-app-container">
-      <Sidebar onSearch={setSearchQuery} />
+      <Sidebar onSearch={handleSearch} />
       
       <main className="main-content">
         <h1 className="page-title">
-          {searchQuery ? `Résultats pour "${searchQuery}"` : ''}
+          {searchQuery ? `Résultats pour "${searchQuery}"` : 'Animes populaires'}
         </h1>
 
         {error && (
@@ -78,10 +84,7 @@ useEffect(() => {
             <p className="error-message">{error}</p>
             <button 
               className="refresh-button"
-              onClick={() => {
-                setPage(1); // Réinitialise la page
-                loadData(); // Recharge les données
-              }}
+              onClick={() => initialLoad ? window.location.reload() : handleSearch(searchQuery)}
             >
               Réessayer
             </button>
@@ -115,26 +118,13 @@ useEffect(() => {
           ))}
         </div>
 
-        {loading && (
-          <div className="loading-state">
-            Chargement...
-          </div>
-        )}
+        {loading && <div className="loading-state">Chargement...</div>}
 
-        {!hasMore && !loading && animes.length > 0 && (
-          <p className="end-message">Fin des résultats</p>
-        )}
-
-        {!loading && animes.length === 0 && !error && (
+        {!initialLoad && !loading && animes.length === 0 && !error && (
           <div className="no-results">
             <p>Aucun anime trouvé</p>
           </div>
         )}
-
-        {/* Bouton pour charger plus d'animes */}
-        <button onClick={loadMore} disabled={loading || !hasMore}>
-          {loading ? 'Chargement...' : 'Charger plus'}
-        </button>
       </main>
     </div>
   );
