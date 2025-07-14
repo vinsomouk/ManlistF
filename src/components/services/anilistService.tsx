@@ -1,5 +1,7 @@
+// src/components/services/anilistService.ts
 const ANILIST_API_URL = 'https://graphql.anilist.co';
 
+// Interfaces TypeScript
 interface AnimeTitle {
   romaji?: string;
   english?: string;
@@ -33,11 +35,17 @@ interface FetchOptions {
   search?: string;
 }
 
+/**
+ * Récupère les animés populaires depuis l'API AniList
+ * @param options Options de requête (page, perPage, search)
+ * @returns Promise avec les données et les infos de pagination
+ */
 export const fetchPopularAnime = async (
   options: FetchOptions = {}
 ): Promise<{ data: Anime[]; pageInfo: PageInfo }> => {
   const { page = 1, perPage = 20, search } = options;
   
+  // Requête GraphQL
   const query = `
     query ($page: Int, $perPage: Int${search ? ', $search: String' : ''}) {
       Page(page: $page, perPage: $perPage) {
@@ -91,13 +99,15 @@ export const fetchPopularAnime = async (
 
     if (!response.ok) {
       const errorBody = await response.text();
-      throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`);
+      throw new Error(`Erreur HTTP! Statut: ${response.status}, Body: ${errorBody}`);
     }
 
     const result = await response.json();
 
     if (result.errors) {
-      throw new Error(result.errors.map((e: {message: string}) => e.message).join(', '));
+      throw new Error(
+        result.errors.map((e: { message: string }) => e.message).join(', ')
+      );
     }
 
     return {
@@ -109,8 +119,13 @@ export const fetchPopularAnime = async (
         hasNextPage: false
       }
     };
-  } catch (e: unknown) { // Meilleure pratique pour TypeScript
-    console.error('API Error:', e);
-    throw e instanceof Error ? e : new Error('Unknown error occurred');
+  } catch (error) {
+    console.error('Erreur API AniList:', error);
+    throw error instanceof Error 
+      ? error 
+      : new Error('Une erreur inconnue est survenue');
   }
 };
+
+// Exportez les types si besoin ailleurs dans l'application
+export type { PageInfo, FetchOptions };
