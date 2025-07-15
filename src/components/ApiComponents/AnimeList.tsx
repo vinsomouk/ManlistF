@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchPopularAnime } from '../services/anilistService';
-import type { Anime, PageInfo } from '../services/anilistService';
+import type { Anime, PageInfo, FetchOptions } from '../services/anilistService';
 import Sidebar from '../MainComponents/SideBar';
 import '../../styles/AnimeList.css';
 
@@ -17,8 +17,29 @@ const AnimeList = () => {
     lastPage: 1,
     hasNextPage: false
   });
+  const [filters, setFilters] = useState<FetchOptions>({});
 
-  // Fonction principale de chargement (corrigée)
+  // Debounce pour optimiser les requêtes
+  const useDebounce = (value: any, delay: number) => {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+
+      return () => {
+        clearTimeout(handler);
+      };
+    }, [value, delay]);
+
+    return debouncedValue;
+  };
+
+  const debouncedSearch = useDebounce(searchQuery, 500);
+  const debouncedFilters = useDebounce(filters, 500);
+
+  // Fonction principale de chargement
   const loadData = useCallback(async (isNewSearch: boolean = false) => {
     if (loading) return;
 
@@ -30,7 +51,8 @@ const AnimeList = () => {
       const { data, pageInfo: newPageInfo } = await fetchPopularAnime({
         page: currentPage,
         perPage: 20,
-        search: searchQuery.trim() || undefined
+        search: debouncedSearch.trim() || undefined,
+        ...debouncedFilters
       });
 
       setAnimes(prev => 
@@ -47,7 +69,7 @@ const AnimeList = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, searchQuery, loading]);
+  }, [page, debouncedSearch, debouncedFilters, loading]);
 
   // Gestion du scroll infini
   useEffect(() => {
@@ -66,10 +88,11 @@ const AnimeList = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [loading, pageInfo.hasNextPage]);
 
-  // Effet pour recherche et chargement initial
+  // Effet pour recherche et filtres
   useEffect(() => {
     loadData(true);
-  }, [searchQuery]);
+    setPage(1);
+  }, [debouncedSearch, debouncedFilters]);
 
   // Effet pour pagination
   useEffect(() => {
@@ -81,12 +104,19 @@ const AnimeList = () => {
   // Fonction de recherche
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    setPage(1);
+  }, []);
+
+  // Fonction de changement de filtres
+  const handleFiltersChange = useCallback((newFilters: FetchOptions) => {
+    setFilters(newFilters);
   }, []);
 
   return (
     <div className="anime-app-container">
-      <Sidebar onSearch={handleSearch} />
+      <Sidebar 
+        onSearch={handleSearch} 
+        onFiltersChange={handleFiltersChange} 
+      />
       
       <main className="main-content">
         <h1 className="page-title">

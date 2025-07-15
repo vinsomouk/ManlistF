@@ -1,7 +1,9 @@
-// src/components/services/anilistService.ts
 const ANILIST_API_URL = 'https://graphql.anilist.co';
 
-// Interfaces TypeScript
+// Définition des types
+type MediaFormat = 'TV' | 'TV_SHORT' | 'MOVIE' | 'SPECIAL' | 'OVA' | 'ONA' | 'MUSIC';
+type MediaSeason = 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL';
+
 interface AnimeTitle {
   romaji?: string;
   english?: string;
@@ -20,6 +22,7 @@ export interface Anime {
   averageScore?: number;
   genres?: string[];
   isAdult?: boolean;
+  format?: MediaFormat;
 }
 
 interface PageInfo {
@@ -29,25 +32,57 @@ interface PageInfo {
   hasNextPage: boolean;
 }
 
-interface FetchOptions {
+export interface FetchOptions {
   page?: number;
   perPage?: number;
   search?: string;
+  sort?: 'popular' | 'trending' | 'top_100' | 'upcoming';
+  genre?: string[];
+  season?: MediaSeason;
+  year?: number;
+  format?: MediaFormat;
 }
 
-/**
- * Récupère les animés populaires depuis l'API AniList
- * @param options Options de requête (page, perPage, search)
- * @returns Promise avec les données et les infos de pagination
- */
 export const fetchPopularAnime = async (
   options: FetchOptions = {}
 ): Promise<{ data: Anime[]; pageInfo: PageInfo }> => {
-  const { page = 1, perPage = 20, search } = options;
+  const { 
+    page = 1, 
+    perPage = 20, 
+    search,
+    sort = 'popular',
+    genre = [],
+    season,
+    year,
+    format
+  } = options;
   
-  // Requête GraphQL
+  const getSortVariable = () => {
+    switch(sort) {
+      case 'trending': return 'TRENDING_DESC';
+      case 'top_100': 
+        return {
+          sort: 'SCORE_DESC',
+          forceType: true
+        };
+      case 'upcoming': return 'POPULARITY_DESC';
+      default: return 'POPULARITY_DESC';
+    }
+  };
+
+  const sortOptions = getSortVariable();
+  const sortQuery = typeof sortOptions === 'object' ? sortOptions.sort : sortOptions;
+
   const query = `
-    query ($page: Int, $perPage: Int${search ? ', $search: String' : ''}) {
+    query (
+      $page: Int, 
+      $perPage: Int,
+      ${search ? '$search: String,' : ''}
+      ${genre.length > 0 ? '$genre: [String],' : ''}
+      ${season ? '$season: MediaSeason,' : ''}
+      ${year ? '$seasonYear: Int,' : ''}
+      ${format ? '$format: MediaFormat,' : ''}
+    ) {
       Page(page: $page, perPage: $perPage) {
         pageInfo {
           total
@@ -56,8 +91,14 @@ export const fetchPopularAnime = async (
           hasNextPage
         }
         media(
+          ${sort === 'top_100' ? 'type: ANIME,' : ''}
+          sort: ${sortQuery}
+          ${search ? 'search: $search' : ''}
+          ${genre.length > 0 ? 'genre_in: $genre' : ''}
+          ${season ? 'season: $season' : ''}
+          ${year ? 'seasonYear: $seasonYear' : ''}
+          ${format ? 'format: $format' : ''}
           type: ANIME
-          ${search ? 'search: $search' : 'sort: POPULARITY_DESC'}
           isAdult: false
         ) {
           id
@@ -73,6 +114,7 @@ export const fetchPopularAnime = async (
           averageScore
           genres
           isAdult
+          format
         }
       }
     }
@@ -81,7 +123,11 @@ export const fetchPopularAnime = async (
   const variables = {
     page,
     perPage,
-    ...(search && { search })
+    ...(search && { search }),
+    ...(genre.length > 0 && { genre }),
+    ...(season && { season }),
+    ...(year && { seasonYear: year }),
+    ...(format && { format }),
   };
 
   try {
@@ -110,8 +156,14 @@ export const fetchPopularAnime = async (
       );
     }
 
+    // Filtre supplémentaire pour s'assurer qu'on a bien que des animés
+    const mediaData = result.data?.Page?.media || [];
+    const filteredData = mediaData.filter((item: Anime) => 
+      item.format && ['TV', 'TV_SHORT', 'MOVIE', 'SPECIAL', 'OVA', 'ONA', 'MUSIC'].includes(item.format)
+    );
+
     return {
-      data: result.data?.Page?.media || [],
+      data: filteredData,
       pageInfo: result.data?.Page?.pageInfo || {
         total: 0,
         currentPage: page,
@@ -127,5 +179,4 @@ export const fetchPopularAnime = async (
   }
 };
 
-// Exportez les types si besoin ailleurs dans l'application
-export type { PageInfo, FetchOptions };
+export type { PageInfo };
