@@ -1,18 +1,14 @@
-// Router.tsx
-import { createBrowserRouter } from 'react-router-dom';
-import Dashboard from '../Dashboard';
-import LoginPage from '../pages/Auth/LoginPage';
-import RegisterPage from '../pages/Auth/RegisterPage';
-import Forum from '../pages/Forum';
-import Profile from '../pages/User/Profile';
-import ListDashboard from '../pages/User/ListDashboard';
-
-
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import Dashboard from '../Dashboard'
+import LoginPage from '../pages/Auth/LoginPage'
+import RegisterPage from '../pages/Auth/RegisterPage'
+import Profile from '../pages/User/Profile'
+import ProtectedRoute from './ProtectedRoutes'
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Dashboard />, 
+    element: <Dashboard />,
   },
   {
     path: '/login',
@@ -23,18 +19,15 @@ const router = createBrowserRouter([
     element: <RegisterPage />,
   },
   {
-    path: '/forum',
-    element: <Forum />,
-  },
-  {
     path: '/profile',
-    element: <Profile />,
+    element: (
+      <ProtectedRoute>
+        <Profile />
+      </ProtectedRoute>
+    ),
   },
-  {
-    path: '/lists',
-    element: <ListDashboard />,
-  },
-  
-]);
+])
 
-export default router;
+export default function AppRouter() {
+  return <RouterProvider router={router} />
+}

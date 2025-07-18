@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { login } from '../../components/services/auth';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/Auth.css';
 
 const LoginPage = () => {
@@ -8,9 +8,11 @@ const LoginPage = () => {
     email: '',
     password: '',
   });
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login, isLoading: isAuthLoading, error: authError } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -19,20 +21,27 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
+    setLocalError('');
+
+    if (!formData.email || !formData.password) {
+      setLocalError('Email and password are required');
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
-      const result = await login(formData.email, formData.password);
-      if (result.user) {
-        navigate('/');
-      } else {
-        setError('Identifiants incorrects');
-      }
+      await login({
+        email: formData.email,
+        password: formData.password
+      });
+      
+      const redirectTo = location.state?.from?.pathname || '/profile';
+      navigate(redirectTo, { replace: true });
     } catch (err) {
-      setError('Erreur de connexion. Veuillez réessayer.');
+      console.error('Login error:', err);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -50,44 +59,60 @@ const LoginPage = () => {
             <h2>Connexion</h2>
           </div>
           
-          {error && <div className="error-message">{error}</div>}
+          {(authError || localError) && (
+            <div className="error-message">
+              {authError || localError}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
+              <label htmlFor="email">Email</label>
               <input
+                id="email"
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 className="auth-input"
-                placeholder="Email"
+                placeholder="votre@email.com"
                 required
+                disabled={isSubmitting || isAuthLoading}
               />
             </div>
 
             <div className="form-group">
+              <label htmlFor="password">Mot de passe</label>
               <input
+                id="password"
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 className="auth-input"
-                placeholder="Mot de passe"
+                placeholder="••••••••"
                 required
+                disabled={isSubmitting || isAuthLoading}
               />
             </div>
 
             <button 
               type="submit" 
               className="auth-button"
-              disabled={isLoading}
+              disabled={isSubmitting || isAuthLoading}
+              aria-busy={isSubmitting || isAuthLoading}
             >
-              {isLoading ? 'Connexion...' : 'Se connecter'}
+              {(isSubmitting || isAuthLoading) ? 'Connexion...' : 'Se connecter'}
             </button>
           </form>
 
           <div className="auth-form-footer">
-            <p>Pas de compte ? <a href="/register">S'inscrire</a></p>
+            <p>
+              Pas de compte ?{' '}
+              <a href="/register" className="auth-link">
+                S'inscrire
+              </a>
+            </p>
           </div>
         </div>
       </div>
