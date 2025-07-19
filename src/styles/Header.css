@@ -3,8 +3,7 @@
   top: 0;
   left: 0;
   right: 0;
-  width: 100vw; /* Utilisation de viewport width */
-  max-width: 100%; /* Sécurité supplémentaire */
+  width: 100vw;
   height: 98px;
   background: #000000;
   display: flex;
@@ -13,7 +12,7 @@
   padding: 0 2rem;
   z-index: 1000;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box; /* Le padding est inclus dans la largeur */
+  box-sizing: border-box;
 }
 
 .header-nav {
@@ -22,7 +21,6 @@
   height: 100%;
   align-items: flex-end;
   padding-bottom: 1rem;
-  flex-wrap: wrap; /* Permet le retour à la ligne si nécessaire */
 }
 
 .header-nav a {
@@ -31,21 +29,90 @@
   font-weight: 500;
   padding: 0.5rem 1rem;
   border-radius: 4px;
-  transition: background 0.2s;
-  white-space: nowrap; /* Empêche le texte de se couper */
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-size: 1.1rem;
 }
 
 .header-nav a:hover {
   background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
 }
 
 .auth-links {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   align-items: center;
 }
 
-/* Version responsive pour petits écrans */
+/* Styles pour les liens Login/Register */
+.auth-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.auth-links a:first-child {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.auth-links a:last-child {
+  background: #3b82f6;
+}
+
+.auth-links a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Styles pour le bouton de déconnexion et l'info utilisateur */
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #3b82f6;
+}
+
+.user-name {
+  color: white;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.logout-button {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logout-button:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Version responsive */
 @media (max-width: 768px) {
   .header-container {
     height: auto;
@@ -58,11 +125,34 @@
     justify-content: center;
     padding-bottom: 0.5rem;
     gap: 1rem;
+    align-items: center;
   }
   
-  .auth-links {
+  .auth-links, .user-section {
     width: 100%;
     justify-content: center;
-    padding-top: 0.5rem;
+    padding-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .header-nav a, 
+  .auth-links a, 
+  .logout-button {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-nav {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0;
+  }
+
+  .user-info {
+    flex-direction: column;
+    text-align: center;
   }
 }

@@ -1,70 +1,42 @@
 import { useState } from 'react';
-import { login } from '../services/auth';
+import { useAuth } from '../../hooks/useAuth';
 
-interface User {
-    id: number;
-    email: string;
-    nickname: string;
-}
+const Login = () => {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const { login, isLoading, error } = useAuth();
 
-interface LoginProps {
-    onLoginSuccess: (user: User) => void;
-}
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await login(formData.email, formData.password);
+    } catch (err) {
+      console.error('Login error:', err);
+    }
+  };
 
-const Login = ({ onLoginSuccess }: LoginProps) => {
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-    });
-    const [error, setError] = useState('');
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const result = await login(formData.email, formData.password);
-            if (result.user) {
-                onLoginSuccess(result.user);
-            }
-            setError('');
-        } catch (error) {
-            setError('Login failed. Please check your credentials.');
-        }
-    };
-
-    return (
-        <div>
-            <h2>Login</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Email:</label>
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div>
-                    <label>Password:</label>
-                    <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                    />
-                </div>
-                <button type="submit">Login</button>
-            </form>
-        </div>
-    );
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="email"
+        value={formData.email}
+        onChange={(e) => setFormData({...formData, email: e.target.value})}
+        required
+      />
+      <input
+        type="password"
+        value={formData.password}
+        onChange={(e) => setFormData({...formData, password: e.target.value})}
+        required
+      />
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Logging in...' : 'Login'}
+      </button>
+      {error && <div className="error">{error}</div>}
+    </form>
+  );
 };
 
 export default Login;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import '../../styles/Auth.css';
 
 const LoginPage = () => {
@@ -8,9 +8,8 @@ const LoginPage = () => {
     email: '',
     password: '',
   });
-  const [localError, setLocalError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login, isLoading: isAuthLoading, error: authError } = useAuth();
+  const [localError, setLocalError] = useState(''); // Ajout de localError
+  const { login, isLoading, error: authError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -20,100 +19,82 @@ const LoginPage = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLocalError('');
+  e.preventDefault();
+  setLocalError('');
 
-    if (!formData.email || !formData.password) {
-      setLocalError('Email and password are required');
-      return;
-    }
+  if (!formData.email || !formData.password) {
+    setLocalError('Email et mot de passe sont requis');
+    return;
+  }
 
-    setIsSubmitting(true);
-
-    try {
-      await login({
-        email: formData.email,
-        password: formData.password
-      });
-      
-      const redirectTo = location.state?.from?.pathname || '/profile';
-      navigate(redirectTo, { replace: true });
-    } catch (err) {
-      console.error('Login error:', err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  try {
+    await login(formData.email, formData.password);
+    navigate(location.state?.from?.pathname || '/profile', { replace: true });
+  } catch (err) {
+    console.error('Erreur de connexion:', err);
+    setLocalError(
+      err instanceof Error 
+        ? err.message 
+        : 'Erreur lors de la connexion. Veuillez réessayer.'
+    );
+  }
+};
 
   return (
-    <div className="auth-container">
-      <div className="auth-video-section">
-        <video autoPlay muted loop className="auth-background-video">
-          <source src="/assets/videos/auth-bg.mp4" type="video/mp4" />
-        </video>
-      </div>
-
-      <div className="auth-form-section">
-        <div className="auth-form-container">
-          <div className="auth-form-header">
-            <h2>Connexion</h2>
+    <div className="login-container">
+      <div className="login-card">
+        <h2>Connexion</h2>
+        
+        {(authError || localError) && (
+          <div className="error-message">
+            {authError || localError}
           </div>
-          
-          {(authError || localError) && (
-            <div className="error-message">
-              {authError || localError}
-            </div>
-          )}
+        )}
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="auth-input"
-                placeholder="votre@email.com"
-                required
-                disabled={isSubmitting || isAuthLoading}
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="password">Mot de passe</label>
-              <input
-                id="password"
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="auth-input"
-                placeholder="••••••••"
-                required
-                disabled={isSubmitting || isAuthLoading}
-              />
-            </div>
-
-            <button 
-              type="submit" 
-              className="auth-button"
-              disabled={isSubmitting || isAuthLoading}
-              aria-busy={isSubmitting || isAuthLoading}
-            >
-              {(isSubmitting || isAuthLoading) ? 'Connexion...' : 'Se connecter'}
-            </button>
-          </form>
-
-          <div className="auth-form-footer">
-            <p>
-              Pas de compte ?{' '}
-              <a href="/register" className="auth-link">
-                S'inscrire
-              </a>
-            </p>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              disabled={isLoading}
+            />
           </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Mot de passe</label>
+            <input
+              id="password"
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            className="login-button"
+            disabled={isLoading}
+            aria-busy={isLoading}
+          >
+            {isLoading ? 'Connexion...' : 'Se connecter'}
+          </button>
+        </form>
+
+        <div className="login-footer">
+          <p>
+            Pas de compte ?{' '}
+            <a href="/register" className="auth-link">
+              S'inscrire
+            </a>
+          </p>
         </div>
       </div>
     </div>

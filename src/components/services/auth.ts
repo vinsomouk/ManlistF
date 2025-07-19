@@ -1,64 +1,161 @@
 const API_URL = 'http://localhost:8000/api/auth';
 
-interface ApiResponse {
-    success: boolean;
-    message?: string;
-    user?: {
-        id: number;
-        email: string;
-        nickname: string;
-    };
-    error?: string;
-    errors?: Record<string, string>;
+// État global géré par le service
+let currentUser: User | null = null;
+type AuthListener = (user: User | null) => void;
+let listeners: AuthListener[] = [];
+
+const notifyListeners = () => {
+  listeners.forEach(listener => listener(currentUser));
+};
+
+export const addAuthListener = (listener: AuthListener) => {
+  listeners.push(listener);
+  return () => {
+    listeners = listeners.filter(l => l !== listener);
+  };
+};
+
+export const getCurrentUser = (): User | null => currentUser;
+
+export interface User {
+  id: string;
+  email: string;
+  nickname: string;
+  profilePicture?: string | null;
 }
 
-export const register = async (email: string, nickname: string, password: string) => {
-    const response = await fetch(`${API_URL}/register`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({ email, nickname, password }),
-        credentials: 'include'
-    });
+export const register = async (
+  email: string,
+  nickname: string,
+  password: string,
+  profilePicture?: string | null
+): Promise<User> => {
+  const response = await fetch(`${API_URL}/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, nickname, password, profilePicture }),
+    credentials: 'include'
+  });
 
-    const data: ApiResponse = await response.json();
-    
-    if (!response.ok) {
-        throw new Error(data.error || JSON.stringify(data.errors));
-    }
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    throw new Error(error?.message || 'Registration failed');
+  }
 
-    return data;
+  const data = await response.json();
+  currentUser = {
+    id: data.id,
+    email: data.email,
+    nickname: data.nickname,
+    profilePicture: data.profilePicture || null
+  };
+  notifyListeners();
+  return currentUser;
 };
 
-export const login = async (email: string, password: string) => {
-    const response = await fetch(`${API_URL}/login`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include'
-    });
+export const login = async (email: string, password: string): Promise<User> => {
+  const response = await fetch(`${API_URL}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+    credentials: 'include'
+  });
 
-    const data: ApiResponse = await response.json();
-    
-    if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Échec de la connexion');
-    }
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    throw new Error(error?.message || 'Login failed');
+  }
 
-    return data;
+  const data = await response.json();
+  currentUser = {
+    id: data.id,
+    email: data.email,
+    nickname: data.nickname,
+    profilePicture: data.profilePicture || null
+  };
+  notifyListeners();
+  return currentUser;
 };
 
-export const logout = async () => {
-    const response = await fetch(`${API_URL}/logout`, {
-        method: 'POST',
-        credentials: 'include'
-    });
+export const logout = async (): Promise<void> => {
+  const response = await fetch(`${API_URL}/logout`, {
+    method: 'POST',
+    credentials: 'include'
+  });
 
-    if (!response.ok) {
-        throw new Error('Échec de la déconnexion');
-    }
+  if (!response.ok) {
+    throw new Error('Logout failed');
+  }
+
+  currentUser = null;
+  notifyListeners();
 };
+
+export const checkAuth = async (): Promise<User | null> => {
+  const response = await fetch(`${API_URL}/check`, {
+    credentials: 'include'
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    currentUser = {
+      id: data.id,
+      email: data.email,
+      nickname: data.nickname,
+      profilePicture: data.profilePicture || null
+    };
+    notifyListeners();
+    return currentUser;
+  }
+  return null;
+};
+
+export const updateProfile = async (
+  userId: string,
+  data: {
+    email: string;
+    nickname: string;
+    profilePicture?: string | null;
+    currentPassword?: string;
+    newPassword?: string;
+  }
+): Promise<User> => {
+  const response = await fetch(`${API_URL}/profile/${userId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(data)
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    throw new Error(error?.message || 'Update failed');
+  }
+
+  const result = await response.json();
+  currentUser = {
+    id: result.id,
+    email: result.email,
+    nickname: result.nickname,
+    profilePicture: result.profilePicture || null
+  };
+  notifyListeners();
+  return currentUser;
+};
+
+export const deleteAccount = async (userId: string): Promise<void> => {
+  const response = await fetch(`${API_URL}/profile/${userId}`, {
+    method: 'DELETE',
+    credentials: 'include'
+  });
+
+  if (!response.ok) {
+    throw new Error('Account deletion failed');
+  }
+  currentUser = null;
+  notifyListeners();
+};
+
+// Initial check au chargement
+checkAuth();
