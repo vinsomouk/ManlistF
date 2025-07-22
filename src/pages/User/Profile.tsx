@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import Header from '../../components/MainComponents/Header';
-import '../../styles/Profile.css'
+import '../../styles/User/Profile.css'
 
 const ProfilePage = () => {
   const navigate = useNavigate();

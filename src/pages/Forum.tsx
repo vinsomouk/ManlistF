@@ -1,4 +1,4 @@
-import '../styles/Forum.css'; 
+import '../styles/User/Forum.css'; 
 import Header from '../components/MainComponents/Header';
 
 function Forum() {

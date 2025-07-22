@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../../styles/SideBar.css';
+import '../../styles/MainComponents/SideBar.css';
 
 interface SidebarProps {
   onSearch?: (term: string) => void;

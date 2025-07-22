@@ -6,6 +6,7 @@ import Profile from '../pages/User/Profile'
 import Forum from '../pages/Forum'
 import ListDashboard from '../pages/User/ListDashboard'
 import ProtectedRoute from './ProtectedRoutes'
+import AnimesInformations from '../pages/AnimesPages/AnimeInformations'
 
 const router = createBrowserRouter([
   {
@@ -21,8 +22,16 @@ const router = createBrowserRouter([
     element: <RegisterPage />,
   },
   {
+    path: '/anime/:id',
+    element: <AnimesInformations />,
+  },
+  {
     path: '/lists',
-    element: <ListDashboard />,
+    element: (
+      <ProtectedRoute>
+        <ListDashboard />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/forum',

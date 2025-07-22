@@ -1,7 +1,7 @@
 import Header from './components/MainComponents/Header'
 import Sidebar from './components/MainComponents/SideBar'
 import AnimeList from './components/ApiComponents/AnimeList'
-import './styles/Dashboard.css'
+import './styles/MainComponents/Dashboard.css'
 
 const Dashboard = () => {
   const handleSearch = (term: string) => {

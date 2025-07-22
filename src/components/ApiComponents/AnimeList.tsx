@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { fetchPopularAnime } from '../services/anilistService';
 import type { Anime, PageInfo, FetchOptions } from '../services/anilistService';
 import Sidebar from '../MainComponents/SideBar';
-import '../../styles/AnimeList.css';
+import '../../styles/Animes/AnimeList.css';
 
 const AnimeList = () => {
   // États
