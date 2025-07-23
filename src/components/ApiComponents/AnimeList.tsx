@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchPopularAnime } from '../services/anilistService';
 import type { Anime, PageInfo, FetchOptions } from '../services/anilistService';
 import Sidebar from '../MainComponents/SideBar';
@@ -134,26 +135,26 @@ const AnimeList = () => {
 
         <div className="anime-grid">
           {animes.map(anime => (
-            <div className="anime-card" key={anime.id}>
-              <div className="anime-card-image-container">
-                {anime.coverImage?.large ? (
-                  <img 
-                    src={anime.coverImage.large} 
-                    alt={anime.title?.romaji || 'Cover'} 
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="anime-card-placeholder">No Image</div>
-                )}
-              </div>
-              <div className="anime-card-content">
-                <h3>{anime.title?.romaji || 'Titre inconnu'}</h3>
-                <div className="anime-meta">
-                  <span>⭐ {anime.averageScore || 'N/A'}</span>
-                  <p>{anime.genres?.join(' • ') || 'Genres non disponibles'}</p>
-                </div>
-              </div>
-            </div>
+            <Link to={`/anime/${anime.id}`} className="anime-card">
+  <div className="anime-card-image-container">
+    {anime.coverImage?.large ? (
+      <img 
+        src={anime.coverImage.large} 
+        alt={anime.title?.romaji || 'Cover'} 
+        loading="lazy"
+      />
+    ) : (
+      <div className="anime-card-placeholder">No Image</div>
+    )}
+  </div>
+  <div className="anime-card-content">
+    <h3>{anime.title?.romaji || 'Titre inconnu'}</h3>
+    <div className="anime-meta">
+      <span>⭐ {anime.averageScore || 'N/A'}</span>
+      <p>{anime.genres?.join(' • ') || 'Genres non disponibles'}</p>
+    </div>
+  </div>
+</Link>
           ))}
         </div>
 

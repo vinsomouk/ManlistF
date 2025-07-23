@@ -367,23 +367,24 @@ export const getWatchlist = async (): Promise<WatchlistItem[]> => {
   return data.data || []; // Retourne toujours un tableau
 };
 
-export const addToWatchlist = async (item: Omit<WatchlistItem, 'progress'> & { progress?: number }): Promise<WatchlistItem> => {
+export const addToWatchlist = async (item: WatchlistItem): Promise<WatchlistItem> => {
   try {
-    logRequest('POST', WATCHLIST_API_URL, item);
-    
     const response = await fetch(WATCHLIST_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({
-        ...item,
-        progress: item.progress || 0
-      })
-    }).then(logResponse);
+      body: JSON.stringify(item)
+    });
 
-    return response.json();
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erreur lors de l\'ajout');
+    }
+
+    return await response.json();
   } catch (error) {
-    return handleError(error);
+    console.error('Error in addToWatchlist:', error);
+    throw error;
   }
 };
 
