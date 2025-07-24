@@ -35,8 +35,8 @@
   height: 100%;
   align-items: flex-end;
   padding-bottom: 20px;
-  padding-left: 75px;
-  gap: 60px;
+  padding-left: 200px;
+  gap: 120px;
 }
 
 .nav-link {
