@@ -13,9 +13,20 @@
 
 @media (max-width: 768px) {
   .sidebar {
-    position: relative;
-    width: 100%;
-    height: auto;
-    top: 0;
+    display: none;
   }
+}
+
+/* Styles pour le menu déroulant */
+.nav-links-container.active {
+  display: flex; /* Afficher lorsque le menu est actif */
+  flex-direction: column; /* Aligner les liens verticalement */
+  position: absolute; /* Positionner le menu */
+  top: 98px; /* Juste en dessous de l'en-tête */
+  left: 0;
+  right: 0;
+  background: #000000; /* Fond du menu */
+  padding: 20px 0; /* Espacement */
+  z-index: 999; /* S'assurer qu'il est au-dessus des autres éléments */
+  align-items: center; /* Centrer les éléments du menu */
 }

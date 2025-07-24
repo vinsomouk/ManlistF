@@ -29,5 +29,10 @@
     margin-left: 0;
     width: 100%;
     padding: 1rem;
+    transition: transform 0.3s ease;
+  }
+
+  .main-content.menu-open {
+    transform: translateY(200px); /* Ajustez selon la hauteur de votre menu */
   }
 }
