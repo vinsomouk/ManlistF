@@ -1,26 +1,48 @@
-import { useState } from 'react'; // Import minimal
 import Header from './components/MainComponents/Header';
 import Sidebar from './components/MainComponents/SideBar';
 import AnimeList from './components/ApiComponents/AnimeList';
 import './styles/MainComponents/Dashboard.css';
 import { useMenu } from './context/MenuContext';
+import type { Filters } from './components/MainComponents/SideBar';
+import { useState } from 'react';
 
 const Dashboard = () => {
-  const isSidebarOpen = true; // Remplace useState si la valeur ne change jamais
-  const { closeMobileMenu } = useMenu();
+  const { isSidebarOpen, toggleSidebar, closeMobileMenu } = useMenu();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState<Filters>({});
 
   const handleSearch = (term: string) => {
-    console.log('Recherche:', term);
+    setSearchQuery(term);
     closeMobileMenu();
+  };
+
+  const handleFiltersChange = (newFilters: Filters) => {
+    setFilters(newFilters);
   };
 
   return (
     <div className="dashboard">
       <Header />
       <div className="dashboard-content">
-        {isSidebarOpen && <Sidebar onSearch={handleSearch} />}
+        {/* Overlay pour fermer la sidebar sur mobile */}
+        {isSidebarOpen && (
+          <div 
+            className="sidebar-overlay"
+            onClick={toggleSidebar}
+          />
+        )}
+        
+        <Sidebar 
+          className={isSidebarOpen ? 'mobile-open' : ''} 
+          onSearch={handleSearch} 
+          onFiltersChange={handleFiltersChange}
+        />
+        
         <main className="main-content">
-          <AnimeList />
+          <AnimeList 
+            searchQuery={searchQuery} 
+            filters={filters} 
+          />
         </main>
       </div>
     </div>

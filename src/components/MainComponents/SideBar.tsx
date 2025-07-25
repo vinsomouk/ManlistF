@@ -4,6 +4,7 @@ import '../../styles/MainComponents/SideBar.css';
 interface SidebarProps {
   onSearch?: (term: string) => void;
   onFiltersChange?: (filters: Filters) => void;
+  className?: string;
 }
 
 export interface Filters {
@@ -14,9 +15,9 @@ export interface Filters {
   format?: 'TV' | 'MOVIE' | 'OVA' | 'ONA';
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onSearch, onFiltersChange }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onSearch, onFiltersChange, className }) => {
   const [filters, setFilters] = useState<Filters>({});
-  const [activeTab, setActiveTab] = useState<'search' | 'filters'>('search');
+  const [activeTab, setActiveTab] = useState<'search' | 'filters' | null>('search');
 
   // Options disponibles
   const sortOptions = [
@@ -43,14 +44,14 @@ const Sidebar: React.FC<SidebarProps> = ({ onSearch, onFiltersChange }) => {
   const yearOptions = Array.from({ length: 30 }, (_, i) => currentYear - i);
 
   const formatOptions = [
-  { value: 'TV', label: 'Série TV' },
-  { value: 'TV_SHORT', label: 'Courte série' },
-  { value: 'MOVIE', label: 'Film' },
-  { value: 'SPECIAL', label: 'Spécial' },
-  { value: 'OVA', label: 'OVA' },
-  { value: 'ONA', label: 'ONA' },
-  { value: 'MUSIC', label: 'Musique' }
-];
+    { value: 'TV', label: 'Série TV' },
+    { value: 'TV_SHORT', label: 'Courte série' },
+    { value: 'MOVIE', label: 'Film' },
+    { value: 'SPECIAL', label: 'Spécial' },
+    { value: 'OVA', label: 'OVA' },
+    { value: 'ONA', label: 'ONA' },
+    { value: 'MUSIC', label: 'Musique' }
+  ];
 
   const handleFilterChange = (key: keyof Filters, value: any) => {
     const newFilters = { ...filters, [key]: value };
@@ -66,18 +67,22 @@ const Sidebar: React.FC<SidebarProps> = ({ onSearch, onFiltersChange }) => {
     handleFilterChange('genre', newGenres);
   };
 
+  const toggleTab = (tab: 'search' | 'filters') => {
+    setActiveTab(current => current === tab ? null : tab);
+  };
+
   return (
-    <aside className="sidebar" aria-label="Sidebar de navigation">
+    <aside className={`sidebar ${className || ''}`} aria-label="Sidebar de navigation">
       <div className="sidebar-tabs">
         <button 
-          className={activeTab === 'search' ? 'active' : ''}
-          onClick={() => setActiveTab('search')}
+          className={`tab-btn ${activeTab === 'search' ? 'active' : ''}`}
+          onClick={() => toggleTab('search')}
         >
           Recherche
         </button>
         <button 
-          className={activeTab === 'filters' ? 'active' : ''}
-          onClick={() => setActiveTab('filters')}
+          className={`tab-btn ${activeTab === 'filters' ? 'active' : ''}`}
+          onClick={() => toggleTab('filters')}
         >
           Filtres
         </button>
@@ -118,7 +123,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onSearch, onFiltersChange }) => {
                 {genreOptions.map(genre => (
                   <button
                     key={genre}
-                    className={filters.genre?.includes(genre) ? 'active' : ''}
+                    className={`genre-tag ${filters.genre?.includes(genre) ? 'active' : ''}`}
                     onClick={() => toggleGenre(genre)}
                     type="button"
                   >

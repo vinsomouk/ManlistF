@@ -2,37 +2,23 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  position: relative;
 }
-
 .dashboard-content {
   display: flex;
+  flex: 1;
   margin-top: 98px;
 }
-
 .main-content {
-  flex: 1;
-  margin-left: 150px;
-  left : 0;
-  padding: 1.5rem;
-  min-height: calc(100vh - 98px);
-  width: calc(100% - 245px);
+  flex-grow: 1;
+  margin-left: 245px;
+  padding: 20px;
+  transition: margin-left 0.3s ease;
 }
-
-/* Responsive */
 @media (max-width: 768px) {
   .dashboard-content {
-    flex-direction: column;
+    margin-top: 70px;
   }
-  
   .main-content {
     margin-left: 0;
-    width: 100%;
-    padding: 1rem;
-    transition: transform 0.3s ease;
-  }
-
-  .main-content.menu-open {
-    transform: translateY(200px); /* Ajustez selon la hauteur de votre menu */
   }
 }

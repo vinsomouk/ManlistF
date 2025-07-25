@@ -88,6 +88,9 @@ export const logout = async (): Promise<void> => {
     throw new Error('Logout failed');
   }
 
+  // Effacer manuellement le cookie de session
+  document.cookie = 'PHPSESSID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  
   currentUser = null;
   notifyListeners();
 };

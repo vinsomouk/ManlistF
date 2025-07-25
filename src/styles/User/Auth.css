@@ -1,15 +1,34 @@
-/* Auth.css */
-.auth-container {
+.auth-page-container {
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background-color: #f8fafc;
+}
+
+.video-section {
+  flex: 3;
+  background-color: #1a1a1a;
+  position: relative;
+  overflow: hidden;
+}
+
+.background-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.8;
+}
+
+.auth-section {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
 }
 
 .auth-form {
   width: 100%;
   max-width: 450px;
-  margin: 2rem auto;
   padding: 2.5rem;
   background-color: #ffffff;
   border-radius: 12px;
@@ -83,7 +102,6 @@
   cursor: not-allowed;
 }
 
-/* Messages */
 .error-message {
   color: #dc2626;
   background-color: #fee2e2;
@@ -122,8 +140,15 @@
   color: #2563eb;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
+  .video-section {
+    display: none;
+  }
+  
+  .auth-section {
+    flex: 1;
+  }
+  
   .auth-form {
     padding: 1.5rem;
     margin: 1rem;

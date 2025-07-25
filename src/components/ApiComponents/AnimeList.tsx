@@ -2,15 +2,18 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchPopularAnime } from '../services/anilistService';
 import type { Anime, PageInfo, FetchOptions } from '../services/anilistService';
-import Sidebar from '../MainComponents/SideBar';
 import '../../styles/Animes/AnimeList.css';
 
-const AnimeList = () => {
+interface AnimeListProps {
+  searchQuery: string;
+  filters: FetchOptions;
+}
+
+const AnimeList: React.FC<AnimeListProps> = ({ searchQuery, filters }) => {
   // États
   const [animes, setAnimes] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [pageInfo, setPageInfo] = useState<PageInfo>({
     total: 0,
@@ -18,7 +21,6 @@ const AnimeList = () => {
     lastPage: 1,
     hasNextPage: false
   });
-  const [filters, setFilters] = useState<FetchOptions>({});
 
   // Debounce pour optimiser les requêtes
   const useDebounce = (value: any, delay: number) => {
@@ -102,23 +104,8 @@ const AnimeList = () => {
     }
   }, [page]);
 
-  // Fonction de recherche
-  const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-  }, []);
-
-  // Fonction de changement de filtres
-  const handleFiltersChange = useCallback((newFilters: FetchOptions) => {
-    setFilters(newFilters);
-  }, []);
-
   return (
     <div className="anime-app-container">
-      <Sidebar 
-        onSearch={handleSearch} 
-        onFiltersChange={handleFiltersChange} 
-      />
-      
       <main className="main-content">
         <h1 className="page-title">
           {searchQuery ? `Résultats pour "${searchQuery}"` : 'Animes populaires'}
@@ -135,26 +122,30 @@ const AnimeList = () => {
 
         <div className="anime-grid">
           {animes.map(anime => (
-            <Link to={`/anime/${anime.id}`} className="anime-card">
-  <div className="anime-card-image-container">
-    {anime.coverImage?.large ? (
-      <img 
-        src={anime.coverImage.large} 
-        alt={anime.title?.romaji || 'Cover'} 
-        loading="lazy"
-      />
-    ) : (
-      <div className="anime-card-placeholder">No Image</div>
-    )}
-  </div>
-  <div className="anime-card-content">
-    <h3>{anime.title?.romaji || 'Titre inconnu'}</h3>
-    <div className="anime-meta">
-      <span>⭐ {anime.averageScore || 'N/A'}</span>
-      <p>{anime.genres?.join(' • ') || 'Genres non disponibles'}</p>
-    </div>
-  </div>
-</Link>
+            <Link 
+              key={anime.id}
+              to={`/anime/${anime.id}`} 
+              className="anime-card"
+            >
+              <div className="anime-card-image-container">
+                {anime.coverImage?.large ? (
+                  <img 
+                    src={anime.coverImage.large} 
+                    alt={anime.title?.romaji || 'Cover'} 
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="anime-card-placeholder">No Image</div>
+                )}
+              </div>
+              <div className="anime-card-content">
+                <h3>{anime.title?.romaji || 'Titre inconnu'}</h3>
+                <div className="anime-meta">
+                  <span>⭐ {anime.averageScore || 'N/A'}</span>
+                  <p>{anime.genres?.join(' • ') || 'Genres non disponibles'}</p>
+                </div>
+              </div>
+            </Link>
           ))}
         </div>
 

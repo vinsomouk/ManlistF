@@ -1,17 +1,21 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Dashboard from '../Dashboard'
-import LoginPage from '../pages/Auth/LoginPage'
-import RegisterPage from '../pages/Auth/RegisterPage'
-import Profile from '../pages/User/Profile'
-import Forum from '../pages/Forum'
-import ListDashboard from '../pages/User/ListDashboard'
-import ProtectedRoute from './ProtectedRoutes'
-import AnimesInformations from '../pages/AnimesPages/AnimeInformations'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import Dashboard from '../Dashboard';
+import LoginPage from '../pages/Auth/LoginPage';
+import RegisterPage from '../pages/Auth/RegisterPage';
+import Profile from '../pages/User/Profile';
+import Forum from '../pages/Forum';
+import ListDashboard from '../pages/User/ListDashboard';
+import ProtectedRoute from './ProtectedRoutes';
+import AnimesInformations from '../pages/AnimesPages/AnimeInformations';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Dashboard />,
+    element: (
+      <ProtectedRoute>
+        <Dashboard />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/login',
@@ -45,8 +49,8 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
-])
+]);
 
 export default function AppRouter() {
-  return <RouterProvider router={router} />
+  return <RouterProvider router={router} />;
 }

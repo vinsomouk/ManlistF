@@ -8,7 +8,7 @@ const LoginPage = () => {
     email: '',
     password: '',
   });
-  const [localError, setLocalError] = useState(''); // Ajout de localError
+  const [localError, setLocalError] = useState('');
   const { login, isLoading, error: authError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,82 +19,90 @@ const LoginPage = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setLocalError('');
+    e.preventDefault();
+    setLocalError('');
 
-  if (!formData.email || !formData.password) {
-    setLocalError('Email et mot de passe sont requis');
-    return;
-  }
+    if (!formData.email || !formData.password) {
+      setLocalError('Email et mot de passe sont requis');
+      return;
+    }
 
-  try {
-    await login(formData.email, formData.password);
-    navigate(location.state?.from?.pathname || '/profile', { replace: true });
-  } catch (err) {
-    console.error('Erreur de connexion:', err);
-    setLocalError(
-      err instanceof Error 
-        ? err.message 
-        : 'Erreur lors de la connexion. Veuillez réessayer.'
-    );
-  }
-};
+    try {
+      await login(formData.email, formData.password);
+      navigate(location.state?.from?.pathname || '/', { replace: true });
+    } catch (err) {
+      setLocalError(
+        err instanceof Error 
+          ? err.message 
+          : 'Erreur lors de la connexion. Veuillez réessayer.'
+      );
+    }
+  };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <h2>Connexion</h2>
-        
-        {(authError || localError) && (
-          <div className="error-message">
-            {authError || localError}
-          </div>
-        )}
+    <div className="auth-page-container">
+      <div className="video-section">
+        <video autoPlay loop muted className="background-video">
+          <source src="/videos/auth-bg.mp4" type="video/mp4" />
+          Votre navigateur ne supporte pas la vidéo.
+        </video>
+      </div>
+      
+      <div className="auth-section">
+        <div className="auth-form">
+          <h2>Connexion</h2>
+          
+          {(authError || localError) && (
+            <div className="error-message">
+              {authError || localError}
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">Mot de passe</label>
+              <input
+                id="password"
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              className="auth-button"
               disabled={isLoading}
-            />
+              aria-busy={isLoading}
+            >
+              {isLoading ? 'Connexion...' : 'Se connecter'}
+            </button>
+          </form>
+
+          <div className="auth-footer">
+            <p>
+              Pas de compte ?{' '}
+              <a href="/register" className="auth-link">
+                S'inscrire
+              </a>
+            </p>
           </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Mot de passe</label>
-            <input
-              id="password"
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              disabled={isLoading}
-            />
-          </div>
-
-          <button 
-            type="submit" 
-            className="login-button"
-            disabled={isLoading}
-            aria-busy={isLoading}
-          >
-            {isLoading ? 'Connexion...' : 'Se connecter'}
-          </button>
-        </form>
-
-        <div className="login-footer">
-          <p>
-            Pas de compte ?{' '}
-            <a href="/register" className="auth-link">
-              S'inscrire
-            </a>
-          </p>
         </div>
       </div>
     </div>
