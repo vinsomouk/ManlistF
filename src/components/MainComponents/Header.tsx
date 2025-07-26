@@ -11,6 +11,9 @@ const Header = () => {
     try {
       await logout();
       closeMobileMenu();
+      
+      // Forcer un rechargement complet de la page
+      window.location.href = '/login';
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
     }
@@ -20,7 +23,6 @@ const Header = () => {
     <header className="header-container">
       <div className="header-content">
         <nav className="main-nav">
-          {/* Bouton pour ouvrir/fermer la sidebar sur mobile */}
           <button 
             className="sidebar-toggle" 
             onClick={toggleSidebar}

@@ -79,20 +79,31 @@ export const login = async (email: string, password: string): Promise<User> => {
 };
 
 export const logout = async (): Promise<void> => {
-  const response = await fetch(`${API_URL}/logout`, {
-    method: 'POST',
-    credentials: 'include'
-  });
+  try {
+    // Appel API au backend
 
-  if (!response.ok) {
+    // Effacer tous les cookies manuellement
+    document.cookie.split(';').forEach(cookie => {
+      const [name] = cookie.split('=');
+      document.cookie = `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    });
+
+    // Marquer la déconnexion forcée
+    localStorage.setItem('forceLogout', Date.now().toString());
+    
+    // Réinitialiser l'état
+    currentUser = null;
+    notifyListeners();
+    
+    console.log('Déconnexion forcée activée');
+  } catch (err) {
+    console.error('Erreur lors de la déconnexion:', err);
+    // Activer quand même la déconnexion forcée en cas d'erreur
+    localStorage.setItem('forceLogout', Date.now().toString());
+    currentUser = null;
+    notifyListeners();
     throw new Error('Logout failed');
   }
-
-  // Effacer manuellement le cookie de session
-  document.cookie = 'PHPSESSID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-  
-  currentUser = null;
-  notifyListeners();
 };
 
 export const checkAuth = async (): Promise<User | null> => {
@@ -159,6 +170,11 @@ export const deleteAccount = async (userId: string): Promise<void> => {
   currentUser = null;
   notifyListeners();
 };
+
+if (localStorage.getItem('forceLogout')) {
+  currentUser = null;
+  localStorage.removeItem('forceLogout');
+}
 
 // Initial check au chargement
 checkAuth();

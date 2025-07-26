@@ -1,6 +1,5 @@
-// src/hooks/useAuth.ts
 import { useState, useEffect } from 'react';
-import type { User, } from '../components/services/auth';
+import type { User } from '../components/services/auth';
 import {
   getCurrentUser,
   addAuthListener,
@@ -17,14 +16,24 @@ export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Synchronisation avec l'état global
   useEffect(() => {
     const unsubscribe = addAuthListener(setUser);
-    apiCheckAuth().finally(() => setIsLoading(false));
+    
+    const checkAuth = async () => {
+      try {
+        await apiCheckAuth();
+      } catch (err) {
+        console.error('Auth check error:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkAuth();
+    
     return unsubscribe;
   }, []);
 
-  // Méthodes d'authentification
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
@@ -43,6 +52,7 @@ export const useAuth = () => {
     try {
       await apiLogout();
       setError(null);
+      setUser(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Logout failed');
       throw err;
@@ -93,6 +103,7 @@ export const useAuth = () => {
       try {
         await apiDeleteAccount(user.id);
         setError(null);
+        setUser(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Deletion failed');
         throw err;
