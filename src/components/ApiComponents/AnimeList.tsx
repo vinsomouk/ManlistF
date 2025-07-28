@@ -106,11 +106,7 @@ const AnimeList: React.FC<AnimeListProps> = ({ searchQuery, filters }) => {
 
   return (
     <div className="anime-app-container">
-      <main className="main-content">
-        <h1 className="page-title">
-          {searchQuery ? `Résultats pour "${searchQuery}"` : 'Animes populaires'}
-        </h1>
-
+        
         {error && (
           <div className="error-state">
             <p className="error-message">{error}</p>
@@ -130,16 +126,25 @@ const AnimeList: React.FC<AnimeListProps> = ({ searchQuery, filters }) => {
               <div className="anime-card-image-container">
                 {anime.coverImage?.large ? (
                   <img 
-                    src={anime.coverImage.large} 
-                    alt={anime.title?.romaji || 'Cover'} 
-                    loading="lazy"
-                  />
+  src={anime.coverImage?.large} 
+  alt={anime.title?.english || anime.title?.romaji || 'Cover'} 
+  loading="lazy"
+  decoding="async"
+  style={{
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover'
+  }}
+/>
                 ) : (
                   <div className="anime-card-placeholder">No Image</div>
                 )}
               </div>
               <div className="anime-card-content">
-                <h3>{anime.title?.romaji || 'Titre inconnu'}</h3>
+                <h3>{anime.title?.english || anime.title?.romaji || 'Titre inconnu'}</h3>
                 <div className="anime-meta">
                   <span>⭐ {anime.averageScore || 'N/A'}</span>
                   <p>{anime.genres?.join(' • ') || 'Genres non disponibles'}</p>
@@ -156,7 +161,7 @@ const AnimeList: React.FC<AnimeListProps> = ({ searchQuery, filters }) => {
             <p>Aucun anime trouvé</p>
           </div>
         )}
-      </main>
+      
     </div>
   );
 };

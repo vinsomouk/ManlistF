@@ -10,8 +10,8 @@
 }
 .main-content {
   flex-grow: 1;
-  margin-left: 245px;
-  padding: 20px;
+  margin-left: 235px;
+  padding: 70px;
   transition: margin-left 0.3s ease;
 }
 @media (max-width: 768px) {
@@ -20,5 +20,7 @@
   }
   .main-content {
     margin-left: 0;
+    padding: 10px;
+    padding-right: 40px;
   }
 }

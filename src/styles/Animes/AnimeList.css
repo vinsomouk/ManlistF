@@ -15,13 +15,12 @@
   border-radius: 8px;
   overflow: hidden;
   transition: transform 0.2s;
-  height: 100%; /* Prend toute la hauteur de la cellule */
-  box-sizing: border-box;
+  height: 100%; /* Garantit que la carte prend toute la hauteur */
 }
 
 .anime-card-image-container {
   position: relative;
-  padding-top: 140%; /* Ratio 1:1.4 (hauteur/largeur) */
+  aspect-ratio: 3/4; /* Ratio standard pour les affiches d'animés */
   overflow: hidden;
 }
 
@@ -35,43 +34,60 @@
 }
 
 .anime-card-content {
-  padding: 0.8rem;
-  flex: 1;
+  padding: 0.5rem;
+  flex: 1; /* Permet au contenu de prendre l'espace restant */
   display: flex;
   flex-direction: column;
-  min-height: 80px; /* Garantit un espace minimum */
+  min-height: auto; /* Supprime la hauteur minimum fixe */
 }
 
 .anime-title {
-  font-size: 0.9rem;
-  margin: 0;
+  font-size: 0.85rem;
+  margin: 0 0 4px 0; /* Espacement optimisé */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.3;
+  flex-grow: 1; /* Permet au titre de prendre l'espace disponible */
 }
 
 .anime-meta {
-  margin-top: auto;
-  font-size: 0.75rem;
-  padding-top: 0.5rem;
+  margin-top: auto; /* Pousse les métadonnées vers le bas */
+  font-size: 0.7rem;
+  padding-top: 0.3rem;
 }
 
-/* ============ RESPONSIVE ============ */
+.anime-app-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Ajustements responsive */
 @media (max-width: 768px) {
   .anime-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 1rem;
   }
   
   .anime-card-content {
-    min-height: 70px;
-    padding: 0.6rem;
+    padding: 0.4rem;
   }
   
   .anime-title {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .anime-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.7rem;
+  }
+  
+  .anime-title {
+    font-size: 0.75rem;
   }
 }
