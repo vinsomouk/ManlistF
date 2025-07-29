@@ -8,7 +8,7 @@ interface SidebarProps {
 }
 
 export interface Filters {
-  sort?: 'popular' | 'trending' | 'top_100' | 'upcoming';
+  sort?: 'popular' | 'trending' | 'upcoming';
   genre?: string[];
   season?: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL';
   year?: number;
@@ -23,7 +23,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onSearch, onFiltersChange, className 
   const sortOptions = [
     { value: 'popular', label: 'Populaires' },
     { value: 'trending', label: 'Tendances actuelles' },
-    { value: 'top_100', label: 'Top 100' },
     { value: 'upcoming', label: 'Prochaines sorties' }
   ];
 

@@ -1,42 +1,40 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchAnimeDetails } from '../../components/services/anilistService';
-import type { Anime } from '../../components/services/anilistService';
+import { 
+  fetchAnimeDetails, 
+  type WatchStatus,
+  type AnimeDetails,
+  type StaffEdge,
+  type CharacterEdge,
+  type Ranking
+} from '../../components/services/anilistService';
 import Header from '../../components/MainComponents/Header';
 import '../../styles/Animes/AnimeDetails.css';
 import { useAuth } from '../../hooks/useAuth';
 import { useWatchlist } from '../../context/WatchlistContext';
 
-interface RelationEdge {
-  relationType: string;
-  node: {
-    id: number;
-    title?: {
-      romaji?: string;
-    };
-    coverImage?: {
-      large?: string;
-    };
-  };
-}
-
-interface Character {
-  id: number;
-  image: {
-    large: string;
-  };
-  name: {
-    full?: string;
-  };
-}
+const statusOptions = [
+  { value: 'WATCHING', label: 'En cours' },
+  { value: 'COMPLETED', label: 'Terminé' },
+  { value: 'ON_HOLD', label: 'En pause' },
+  { value: 'DROPPED', label: 'Abandonné' },
+  { value: 'PLANNED', label: 'Prévu' }
+] as const;
 
 function AnimesInformations() {
   const { id } = useParams<{ id: string }>();
-  const [anime, setAnime] = useState<Anime | null>(null);
+  const [anime, setAnime] = useState<AnimeDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const { watchlist, addToWatchlist } = useWatchlist();
+  const [showWatchlistModal, setShowWatchlistModal] = useState(false);
+  const [watchlistData, setWatchlistData] = useState({
+    status: 'PLANNED' as WatchStatus,
+    progress: 0,
+    score: 0,
+    notes: ''
+  });
 
   useEffect(() => {
     const loadAnimeDetails = async () => {
@@ -58,11 +56,16 @@ function AnimesInformations() {
     if (!anime) return;
     
     try {
-      await addToWatchlist(anime.id);
-      alert('Anime ajouté à la watchlist!');
+      await addToWatchlist({
+        animeId: anime.id,
+        status: watchlistData.status,
+        progress: watchlistData.progress,
+        score: watchlistData.score,
+        notes: watchlistData.notes
+      });
+      setShowWatchlistModal(false);
     } catch (err) {
-      const error = err as Error;
-      alert(error.message);
+      alert(err instanceof Error ? err.message : 'Failed to add to watchlist');
     }
   };
 
@@ -83,19 +86,9 @@ function AnimesInformations() {
       <div className="content-wrapper">
         <div className="main-info">
           <div className="cover-image">
-            <img src={anime.coverImage?.large} alt={anime.title?.romaji} />
+            <img src={anime.coverImage?.large} alt={anime.title?.romaji || 'Anime cover'} />
           </div>
 
-          {user && (
-            <button 
-              onClick={handleAddToWatchlist}
-              disabled={isInWatchlist}
-              className={`add-to-watchlist-btn ${isInWatchlist ? 'in-watchlist' : ''}`}
-            >
-              {isInWatchlist ? 'Déjà dans la watchlist' : 'Ajouter à ma watchlist'}
-            </button>
-          )}
-          
           <div className="details">
             <h1>{anime.title?.romaji}</h1>
             <div className="meta">
@@ -110,6 +103,16 @@ function AnimesInformations() {
                 <span key={genre} className="genre-tag">{genre}</span>
               ))}
             </div>
+
+            {user && (
+              <button 
+                onClick={() => setShowWatchlistModal(true)}
+                disabled={isInWatchlist}
+                className={`add-to-watchlist-btn ${isInWatchlist ? 'in-watchlist' : ''}`}
+              >
+                {isInWatchlist ? 'Déjà dans la watchlist' : 'Ajouter à ma watchlist'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -118,40 +121,155 @@ function AnimesInformations() {
           <p dangerouslySetInnerHTML={{ __html: anime.description || 'No description available.' }} />
         </div>
 
-        {anime.characters?.nodes.length > 0 && (
-          <div className="characters-section">
-            <h2>Personnages principaux</h2>
-            <div className="characters-grid">
-              {anime.characters.nodes.map((character: Character) => (
-                <div key={character.id} className="character-card">
+        {anime.staff?.edges && anime.staff.edges.length > 0 && (
+          <div className="staff-section">
+            <h2>Staff</h2>
+            <div className="staff-grid">
+              {anime.staff.edges.map(({ role, node }) => (
+                <div key={node.id} className="staff-card">
                   <img 
-                    src={character.image.large} 
-                    alt={character.name.full || 'Character image'} 
+                    src={node.image?.large || '/placeholder-staff.jpg'} 
+                    alt={node.name?.full || 'Staff member'} 
                   />
-                  <p>{character.name.full}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {anime.relations?.edges.length > 0 && (
-          <div className="relations-section">
-            <h2>Relations</h2>
-            <div className="relations-grid">
-              {anime.relations.edges.map(({ relationType, node }: RelationEdge) => (
-                <div key={node.id} className="relation-card">
-                  <img src={node.coverImage?.large} alt={node.title?.romaji} />
                   <div>
-                    <p>{relationType}</p>
-                    <h3>{node.title?.romaji}</h3>
+                    <h3>{node.name?.full}</h3>
+                    <p>{role}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         )}
+
+        {anime.characters?.edges && anime.characters.edges.length > 0 && (
+          <div className="main-characters-section">
+            <h2>Personnages Principaux</h2>
+            <div className="characters-grid">
+              {anime.characters.edges.map(edge => (
+                <div key={edge.node.id} className="character-card">
+                  <img 
+                    src={edge.node.image?.large || '/placeholder-character.jpg'} 
+                    alt={edge.node.name?.full || 'Character'} 
+                  />
+                  <div>
+                    <h3>{edge.node.name?.full}</h3>
+                    <p>Rôle: {edge.role || 'Inconnu'}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {anime.characters?.edges && anime.characters.edges.length > 0 && (
+          <div className="voice-actors-section">
+            <h2>Doubleurs</h2>
+            <div className="voice-actors-grid">
+              {anime.characters.edges.flatMap(edge => 
+                edge.voiceActors.map(actor => (
+                  <div key={`${edge.node.id}-${actor.id}`} className="voice-actor-card">
+                    <img 
+                      src={actor.image?.large || '/placeholder-actor.jpg'} 
+                      alt={actor.name?.full || 'Voice actor'} 
+                    />
+                    <div>
+                      <h3>{actor.name?.full}</h3>
+                      <p>Double: {edge.node.name?.full}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {anime.rankings && anime.rankings.length > 0 && (
+          <div className="rankings-section">
+            <h2>Classements</h2>
+            <ul>
+              {anime.rankings.map(ranking => (
+                <li key={ranking.id}>
+                  #{ranking.rank} - {ranking.context} {ranking.year && `(${ranking.year})`}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
+
+      {showWatchlistModal && (
+        <div className="watchlist-modal">
+          <div className="modal-content">
+            <h2>Ajouter à ma watchlist</h2>
+            <span className="close" onClick={() => setShowWatchlistModal(false)}>&times;</span>
+            
+            <div className="form-group">
+              <label>Statut:</label>
+              <select
+                value={watchlistData.status}
+                onChange={(e) => setWatchlistData({
+                  ...watchlistData, 
+                  status: e.target.value as WatchStatus
+                })}
+              >
+                {statusOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Progression (épisodes):</label>
+              <input
+                type="number"
+                min="0"
+                max={anime.episodes || 100}
+                value={watchlistData.progress}
+                onChange={(e) => setWatchlistData({
+                  ...watchlistData, 
+                  progress: Number(e.target.value) || 0
+                })}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Note (0-100):</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={watchlistData.score}
+                onChange={(e) => setWatchlistData({
+                  ...watchlistData, 
+                  score: Number(e.target.value) || 0
+                })}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Notes:</label>
+              <textarea
+                value={watchlistData.notes}
+                onChange={(e) => setWatchlistData({
+                  ...watchlistData, 
+                  notes: e.target.value
+                })}
+                rows={3}
+                maxLength={500}
+              />
+            </div>
+
+            <button 
+              onClick={handleAddToWatchlist}
+              className="confirm-btn"
+            >
+              Confirmer
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

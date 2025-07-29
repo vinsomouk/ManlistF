@@ -1,16 +1,21 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { getWatchlist, addToWatchlist, updateWatchlistItem, removeFromWatchlist } from '../components/services/anilistService';
+import { 
+  getWatchlist, 
+  addToWatchlist as apiAddToWatchlist, 
+  updateWatchlistItem as apiUpdateWatchlistItem, 
+  removeFromWatchlist as apiRemoveFromWatchlist,
+  type WatchlistItem,
+  type WatchStatus
+} from '../components/services/anilistService';
 import { useAuth } from '../hooks/useAuth';
-import type { WatchlistItem, WatchStatus } from '../components/services/anilistService';
 
 type WatchlistContextType = {
   watchlist: WatchlistItem[];
   loading: boolean;
   error: string | null;
-  addToWatchlist: (animeId: number) => Promise<void>;
+  addToWatchlist: (item: Omit<WatchlistItem, 'animeTitle' | 'animeImage'>) => Promise<WatchlistItem>;
   removeFromWatchlist: (animeId: number) => Promise<void>;
-  updateWatchlistStatus: (animeId: number, status: WatchStatus) => Promise<void>;
-  updateWatchlistProgress: (animeId: number, progress: number) => Promise<void>;
+  updateWatchlistItem: (animeId: number, updates: Partial<Omit<WatchlistItem, 'animeId' | 'animeTitle' | 'animeImage'>>) => Promise<void>;
   fetchWatchlist: () => Promise<void>;
 };
 
@@ -30,6 +35,7 @@ export const WatchlistProvider = ({ children }: { children: React.ReactNode }) =
       setLoading(true);
       const data = await getWatchlist();
       setWatchlist(data);
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
     } finally {
@@ -37,56 +43,53 @@ export const WatchlistProvider = ({ children }: { children: React.ReactNode }) =
     }
   };
 
-  const handleAddToWatchlist = async (animeId: number) => {
+  const handleAddToWatchlist = async (item: Omit<WatchlistItem, 'animeTitle' | 'animeImage'>) => {
     if (!user) throw new Error('Non connecté');
     
     try {
-      const newItem = await addToWatchlist({
-        animeId,
-        status: 'PLANNED',
-        progress: 0
-      });
+      setLoading(true);
+      const newItem = await apiAddToWatchlist(item);
       setWatchlist(prev => [...prev, newItem]);
+      return newItem;
     } catch (err) {
       const error = err as Error;
       if (error.message.includes('409')) {
         throw new Error('Cet anime est déjà dans votre watchlist');
       }
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleRemoveFromWatchlist = async (animeId: number) => {
     try {
-      await removeFromWatchlist(animeId);
+      setLoading(true);
+      await apiRemoveFromWatchlist(animeId);
       setWatchlist(prev => prev.filter(item => item.animeId !== animeId));
     } catch (err) {
       const error = err as Error;
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleUpdateStatus = async (animeId: number, status: WatchStatus) => {
+  const handleUpdateItem = async (
+    animeId: number, 
+    updates: Partial<Omit<WatchlistItem, 'animeId' | 'animeTitle' | 'animeImage'>>
+  ) => {
     try {
-      const updatedItem = await updateWatchlistItem(animeId, { status });
+      setLoading(true);
+      const updatedItem = await apiUpdateWatchlistItem(animeId, updates);
       setWatchlist(prev => prev.map(item => 
-        item.animeId === animeId ? updatedItem : item
+        item.animeId === animeId ? { ...item, ...updatedItem } : item
       ));
     } catch (err) {
       const error = err as Error;
       throw error;
-    }
-  };
-
-  const handleUpdateProgress = async (animeId: number, progress: number) => {
-    try {
-      const updatedItem = await updateWatchlistItem(animeId, { progress });
-      setWatchlist(prev => prev.map(item => 
-        item.animeId === animeId ? updatedItem : item
-      ));
-    } catch (err) {
-      const error = err as Error;
-      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -104,8 +107,7 @@ export const WatchlistProvider = ({ children }: { children: React.ReactNode }) =
       error,
       addToWatchlist: handleAddToWatchlist,
       removeFromWatchlist: handleRemoveFromWatchlist,
-      updateWatchlistStatus: handleUpdateStatus,
-      updateWatchlistProgress: handleUpdateProgress,
+      updateWatchlistItem: handleUpdateItem,
       fetchWatchlist
     }}>
       {children}

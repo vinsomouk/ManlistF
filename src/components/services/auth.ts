@@ -1,4 +1,5 @@
 const API_URL = 'http://localhost:8000/api/auth';
+const PROFILE_API_URL = 'http://localhost:8000/api/profile';
 
 // État global géré par le service
 let currentUser: User | null = null;
@@ -23,6 +24,9 @@ export interface User {
   email: string;
   nickname: string;
   profilePicture?: string | null;
+  isVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export const register = async (
@@ -39,16 +43,22 @@ export const register = async (
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => null);
-    throw new Error(error?.message || 'Registration failed');
+    const errorData = await response.json().catch(() => null);
+    // Gestion améliorée des erreurs
+    const errorMessage = errorData?.error || 
+                        (errorData?.errors ? errorData.errors.join(', ') : 'Registration failed');
+    throw new Error(errorMessage);
   }
 
   const data = await response.json();
   currentUser = {
-    id: data.id,
+    id: data.id.toString(), // Convertir en string
     email: data.email,
     nickname: data.nickname,
-    profilePicture: data.profilePicture || null
+    profilePicture: data.profilePicture || null,
+    isVerified: data.isVerified,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt
   };
   notifyListeners();
   return currentUser;
@@ -72,7 +82,10 @@ export const login = async (email: string, password: string): Promise<User> => {
     id: data.id,
     email: data.email,
     nickname: data.nickname,
-    profilePicture: data.profilePicture || null
+    profilePicture: data.profilePicture || null,
+    isVerified: data.isVerified,
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt
   };
   notifyListeners();
   return currentUser;
@@ -81,6 +94,10 @@ export const login = async (email: string, password: string): Promise<User> => {
 export const logout = async (): Promise<void> => {
   try {
     // Appel API au backend
+    await fetch(`${API_URL}/logout`, {
+      method: 'POST',
+      credentials: 'include'
+    });
 
     // Effacer tous les cookies manuellement
     document.cookie.split(';').forEach(cookie => {
@@ -95,7 +112,7 @@ export const logout = async (): Promise<void> => {
     currentUser = null;
     notifyListeners();
     
-    console.log('Déconnexion forcée activée');
+    console.log('Déconnexion réussie');
   } catch (err) {
     console.error('Erreur lors de la déconnexion:', err);
     // Activer quand même la déconnexion forcée en cas d'erreur
@@ -107,26 +124,33 @@ export const logout = async (): Promise<void> => {
 };
 
 export const checkAuth = async (): Promise<User | null> => {
-  const response = await fetch(`${API_URL}/check`, {
-    credentials: 'include'
-  });
+  try {
+    const response = await fetch(`${API_URL}/check`, {
+      credentials: 'include'
+    });
 
-  if (response.ok) {
-    const data = await response.json();
-    currentUser = {
-      id: data.id,
-      email: data.email,
-      nickname: data.nickname,
-      profilePicture: data.profilePicture || null
-    };
-    notifyListeners();
-    return currentUser;
+    if (response.ok) {
+      const data = await response.json();
+      currentUser = {
+        id: data.id,
+        email: data.email,
+        nickname: data.nickname,
+        profilePicture: data.profilePicture || null,
+        isVerified: data.isVerified,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt
+      };
+      notifyListeners();
+      return currentUser;
+    }
+    return null;
+  } catch (error) {
+    console.error('Erreur lors de la vérification d\'authentification:', error);
+    return null;
   }
-  return null;
 };
 
 export const updateProfile = async (
-  userId: string,
   data: {
     email: string;
     nickname: string;
@@ -135,7 +159,8 @@ export const updateProfile = async (
     newPassword?: string;
   }
 ): Promise<User> => {
-  const response = await fetch(`${API_URL}/profile/${userId}`, {
+  // CORRECTION : Endpoint correct et méthode PUT
+  const response = await fetch(`${PROFILE_API_URL}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -143,30 +168,45 @@ export const updateProfile = async (
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => null);
-    throw new Error(error?.message || 'Update failed');
+    const errorData = await response.json().catch(() => null);
+    const errorMessage = errorData?.message || 
+                         (errorData?.errors ? JSON.stringify(errorData.errors) : 'Update failed');
+    throw new Error(errorMessage);
   }
 
   const result = await response.json();
   currentUser = {
-    id: result.id,
-    email: result.email,
-    nickname: result.nickname,
-    profilePicture: result.profilePicture || null
+    id: result.user.id,
+    email: result.user.email,
+    nickname: result.user.nickname,
+    profilePicture: result.user.profilePicture || null,
+    isVerified: result.user.isVerified,
+    createdAt: result.user.createdAt,
+    updatedAt: result.user.updatedAt
   };
   notifyListeners();
   return currentUser;
 };
 
-export const deleteAccount = async (userId: string): Promise<void> => {
-  const response = await fetch(`${API_URL}/profile/${userId}`, {
+export const deleteAccount = async (): Promise<void> => {
+  // CORRECTION : Utilisation du bon endpoint
+  const response = await fetch(`${PROFILE_API_URL}`, {
     method: 'DELETE',
     credentials: 'include'
   });
 
   if (!response.ok) {
-    throw new Error('Account deletion failed');
+    const error = await response.json().catch(() => null);
+    throw new Error(error?.message || 'Account deletion failed');
   }
+  
+  // Effacer tous les cookies après suppression du compte
+  document.cookie.split(';').forEach(cookie => {
+    const [name] = cookie.split('=');
+    document.cookie = `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+  });
+  
+  localStorage.setItem('forceLogout', Date.now().toString());
   currentUser = null;
   notifyListeners();
 };

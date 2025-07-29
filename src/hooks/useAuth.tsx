@@ -1,3 +1,4 @@
+// src/hooks/useAuth.tsx
 import { useState, useEffect } from 'react';
 import type { User } from '../components/services/auth';
 import {
@@ -20,6 +21,7 @@ export const useAuth = () => {
     const unsubscribe = addAuthListener(setUser);
     
     const checkAuth = async () => {
+      setIsLoading(true);
       try {
         await apiCheckAuth();
       } catch (err) {
@@ -52,7 +54,6 @@ export const useAuth = () => {
     try {
       await apiLogout();
       setError(null);
-      setUser(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Logout failed');
       throw err;
@@ -67,10 +68,10 @@ export const useAuth = () => {
     error,
     login,
     logout,
-    register: async (email: string, nickname: string, password: string) => {
+    register: async (email: string, nickname: string, password: string, profilePicture?: string) => {
       setIsLoading(true);
       try {
-        await apiRegister(email, nickname, password);
+        await apiRegister(email, nickname, password, profilePicture);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Registration failed');
@@ -82,13 +83,14 @@ export const useAuth = () => {
     updateProfile: async (data: {
       email: string;
       nickname: string;
+      profilePicture?: string | null;
       currentPassword?: string;
       newPassword?: string;
     }) => {
-      if (!user) return;
       setIsLoading(true);
       try {
-        await apiUpdateProfile(user.id, data);
+        // CORRECTION FINALE : Appel avec un seul argument
+        await apiUpdateProfile(data);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Update failed');
@@ -98,10 +100,10 @@ export const useAuth = () => {
       }
     },
     deleteAccount: async () => {
-      if (!user) return;
       setIsLoading(true);
       try {
-        await apiDeleteAccount(user.id);
+        // CORRECTION FINALE : Appel sans argument
+        await apiDeleteAccount();
         setError(null);
         setUser(null);
       } catch (err) {
@@ -113,3 +115,5 @@ export const useAuth = () => {
     }
   };
 };
+
+export type { User };

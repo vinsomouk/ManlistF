@@ -39,7 +39,7 @@
 
 .auth-form {
   width: 100%;
-  max-width: 420px; /* Largeur réduite */
+  max-width: 420px;
   padding: 2rem;
   background-color: #ffffff;
   border-radius: 12px;
@@ -49,7 +49,7 @@
 
 .auth-form h2 {
   color: #1a1a1a;
-  font-size: 1.8rem; /* Taille réduite */
+  font-size: 1.8rem;
   margin-bottom: 1.5rem;
   text-align: center;
   font-weight: 600;
@@ -59,25 +59,41 @@
   margin-bottom: 1.2rem;
 }
 
-.form-group label {
+/* Styles spécifiques pour les selects et textareas */
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: #333;
+  color: white;
+  border: 1px solid #444;
+  font-size: 1rem;
+}
+
+/* Styles pour les labels - augmenté la spécificité */
+.auth-form .form-group label {
   display: block;
   margin-bottom: 0.4rem;
   font-weight: 500;
-  color: #1a1a1a;
+  color: #000000;
   font-size: 0.95rem;
 }
 
-.form-group input {
+/* Styles pour les inputs - spécificité augmentée */
+.auth-form .form-group input {
   width: 100%;
-  padding: 0.85rem; /* Padding réduit */
+  padding: 0.85rem;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
+  background: #ffffff;
+  color: #000000;
   font-size: 0.95rem;
   transition: all 0.3s ease;
   box-sizing: border-box;
 }
 
-.form-group input:focus {
+.auth-form .form-group input:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
@@ -95,7 +111,7 @@
 
 .auth-button {
   width: 100%;
-  padding: 0.85rem; /* Padding réduit */
+  padding: 0.85rem;
   background-color: #3b82f6;
   color: white;
   border: none;
@@ -195,11 +211,11 @@
     margin-bottom: 1rem;
   }
 
-  .form-group label {
+  .auth-form .form-group label {
     font-size: 0.9rem;
   }
   
-  .form-group input {
+  .auth-form .form-group input {
     padding: 0.8rem;
     font-size: 0.9rem;
   }
@@ -237,7 +253,7 @@
     margin-bottom: 0.8rem;
   }
   
-  .form-group input {
+  .auth-form .form-group input {
     padding: 0.7rem;
   }
   
@@ -257,11 +273,11 @@
     margin-bottom: 1rem;
   }
   
-  .form-group label {
+  .auth-form .form-group label {
     font-size: 0.85rem;
   }
   
-  .form-group input {
+  .auth-form .form-group input {
     padding: 0.75rem;
     font-size: 0.85rem;
   }
@@ -283,7 +299,6 @@
   }
 }
 
-/* Empêcher le défilement sur le body */
 body {
   overflow: hidden;
 }
