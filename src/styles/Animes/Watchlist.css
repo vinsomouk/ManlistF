@@ -1,3 +1,4 @@
+/* Styles spécifiques à la Watchlist */
 .watchlist-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -49,14 +50,15 @@
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-.anime-card {
+/* Modification du nom de classe pour éviter les conflits */
+.watchlist-anime-card {
   display: flex;
   padding: 15px;
   cursor: pointer;
   gap: 15px;
 }
 
-.anime-card img {
+.watchlist-anime-card img {
   width: 80px;
   height: 120px;
   object-fit: cover;

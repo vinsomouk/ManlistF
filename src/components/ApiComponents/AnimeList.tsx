@@ -118,39 +118,33 @@ const AnimeList: React.FC<AnimeListProps> = ({ searchQuery, filters }) => {
 
         <div className="anime-grid">
           {animes.map(anime => (
-            <Link 
-              key={anime.id}
-              to={`/anime/${anime.id}`} 
-              className="anime-card"
-            >
-              <div className="anime-card-image-container">
-                {anime.coverImage?.large ? (
-                  <img 
-  src={anime.coverImage?.large} 
-  alt={anime.title?.english || anime.title?.romaji || 'Cover'} 
-  loading="lazy"
-  decoding="async"
-  style={{
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover'
-  }}
-/>
-                ) : (
-                  <div className="anime-card-placeholder">No Image</div>
-                )}
-              </div>
-              <div className="anime-card-content">
-                <h3>{anime.title?.english || anime.title?.romaji || 'Titre inconnu'}</h3>
-                <div className="anime-meta">
-                  <span>⭐ {anime.averageScore || 'N/A'}</span>
-                  <p>{anime.genres?.join(' • ') || 'Genres non disponibles'}</p>
+            <div key={anime.id} className="anime-grid-item">
+              <Link 
+                to={`/anime/${anime.id}`} 
+                className="anime-card"
+              >
+                <div className="anime-card-image-container">
+                  {anime.coverImage?.large ? (
+                    <img 
+                      src={anime.coverImage?.large} 
+                      alt={anime.title?.english || anime.title?.romaji || 'Cover'} 
+                      loading="lazy"
+                      decoding="async"
+                      className="anime-card-image"
+                    />
+                  ) : (
+                    <div className="anime-card-placeholder">No Image</div>
+                  )}
                 </div>
-              </div>
-            </Link>
+                <div className="anime-card-content">
+                  <h3 className="anime-title">{anime.title?.english || anime.title?.romaji || 'Titre inconnu'}</h3>
+                  <div className="anime-meta">
+                    <span>⭐ {anime.averageScore || 'N/A'}</span>
+                    <p>{anime.genres?.join(' • ') || 'Genres non disponibles'}</p>
+                  </div>
+                </div>
+              </Link>
+            </div>
           ))}
         </div>
 

@@ -121,7 +121,8 @@ function ListDashboard() {
         {filteredWatchlist.length > 0 ? (
           filteredWatchlist.map(item => (
             <div key={`${item.animeId}-${item.status}`} className="watchlist-item">
-              <div className="anime-info-header">
+              {/* Changement de classe ici */}
+              <div className="anime-info-header watchlist-anime-card">
                 {item.animeImage && (
                   <img 
                     src={item.animeImage} 

@@ -406,7 +406,10 @@ export const getWatchlist = async (): Promise<WatchlistItem[]> => {
     headers: { 'Accept': 'application/json' }
   });
 
-  if (!response.ok) throw new Error('Failed to fetch watchlist');
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to fetch watchlist: ${errorText}`);
+  }
   
   const data = await response.json();
   return data.data || [];
@@ -423,10 +426,19 @@ export const addToWatchlist = async (item: Omit<WatchlistItem, 'animeTitle' | 'a
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Erreur lors de l\'ajout');
+      throw new Error(errorData.error || 'Erreur lors de l\'ajout');
     }
 
-    return await response.json();
+    const data = await response.json();
+    return {
+      animeId: data.item.animeId,
+      status: data.item.status,
+      progress: data.item.progress,
+      score: data.item.score,
+      notes: data.item.notes,
+      animeTitle: data.item.animeTitle,
+      animeImage: data.item.animeImage
+    };
   } catch (error) {
     console.error('Error in addToWatchlist:', error);
     throw error;
@@ -446,10 +458,20 @@ export const updateWatchlistItem = async (
     });
 
     if (!response.ok) {
-      throw new Error('Failed to update watchlist item');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update watchlist item');
     }
     
-    return await response.json();
+    const data = await response.json();
+    return {
+      animeId: data.item.animeId,
+      status: data.item.status,
+      progress: data.item.progress,
+      score: data.item.score,
+      notes: data.item.notes,
+      animeTitle: data.item.animeTitle,
+      animeImage: data.item.animeImage
+    };
   } catch (error) {
     console.error('Error updating watchlist item:', error);
     throw error;
@@ -464,7 +486,8 @@ export const removeFromWatchlist = async (animeId: number): Promise<void> => {
     });
 
     if (!response.ok) {
-      throw new Error(`Delete failed with status: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`Delete failed: ${response.status} - ${errorText}`);
     }
   } catch (error) {
     console.error('Error removing from watchlist:', error);

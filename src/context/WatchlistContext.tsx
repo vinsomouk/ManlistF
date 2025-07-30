@@ -69,6 +69,7 @@ export const WatchlistProvider = ({ children }: { children: React.ReactNode }) =
       setWatchlist(prev => prev.filter(item => item.animeId !== animeId));
     } catch (err) {
       const error = err as Error;
+      setError(`Erreur suppression: ${error.message}`);
       throw error;
     } finally {
       setLoading(false);
@@ -87,6 +88,7 @@ export const WatchlistProvider = ({ children }: { children: React.ReactNode }) =
       ));
     } catch (err) {
       const error = err as Error;
+      setError(`Erreur mise à jour: ${error.message}`);
       throw error;
     } finally {
       setLoading(false);
