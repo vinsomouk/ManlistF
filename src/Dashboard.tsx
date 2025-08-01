@@ -1,6 +1,7 @@
 import Header from './components/MainComponents/Header';
 import Sidebar from './components/MainComponents/SideBar';
 import AnimeList from './components/ApiComponents/AnimeList';
+import QuestionnairePromo from './components/Questionnaire/QuestionnairePromo';
 import './styles/MainComponents/Dashboard.css';
 import { useMenu } from './context/MenuContext';
 import type { Filters } from './components/MainComponents/SideBar';
@@ -22,6 +23,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
+      <QuestionnairePromo />
       <Header />
       <div className="dashboard-content">
         {/* Overlay pour fermer la sidebar sur mobile */}

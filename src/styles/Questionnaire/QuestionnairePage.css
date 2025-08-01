@@ -1,0 +1,189 @@
+.questionnaire-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.progress-container {
+  margin-bottom: 2rem;
+  background: #e2e8f0;
+  border-radius: 9999px;
+  height: 8px;
+  position: relative;
+}
+
+.progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #4299e1;
+  border-radius: 9999px;
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  text-align: center;
+  margin-top: 0.5rem;
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.question-container {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.question-text {
+  font-size: 1.8rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #2d3748;
+  line-height: 1.4;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.option-card {
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.option-card:hover {
+  border-color: #4299e1;
+  background: #f0f7ff;
+}
+
+.option-card.selected {
+  border-color: #4299e1;
+  background: #ebf4ff;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
+}
+
+.navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+
+.btn-prev, .btn-next, .btn-submit {
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-prev {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.btn-prev:hover {
+  background: #cbd5e0;
+}
+
+.btn-next, .btn-submit {
+  background: #4299e1;
+  color: white;
+}
+
+.btn-next:hover, .btn-submit:hover {
+  background: #3182ce;
+}
+
+.btn-next:disabled, .btn-submit:disabled {
+  background: #cbd5e0;
+  cursor: not-allowed;
+}
+
+/* Page de recommandations */
+.recommendation-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.recommendation-content {
+  text-align: center;
+}
+
+.recommendation-content h2 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: #2d3748;
+}
+
+.recommendation-content p {
+  font-size: 1.2rem;
+  color: #718096;
+  margin-bottom: 2rem;
+}
+
+.anime-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.anime-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.anime-card:hover {
+  transform: translateY(-5px);
+}
+
+.anime-card img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+}
+
+.anime-card h3 {
+  font-size: 1.1rem;
+  padding: 0.75rem;
+  margin: 0;
+  color: #2d3748;
+}
+
+.anime-meta {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 0.75rem 0.75rem;
+  font-size: 0.9rem;
+  color: #718096;
+}
+
+.btn-back {
+  background: #4299e1;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-back:hover {
+  background: #3182ce;
+}

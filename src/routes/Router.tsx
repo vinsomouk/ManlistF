@@ -6,6 +6,8 @@ import RegisterPage from '../pages/Auth/RegisterPage';
 import Profile from '../pages/User/Profile';
 import Forum from '../pages/Forum';
 import ListDashboard from '../pages/User/ListDashboard';
+import QuestionnaireList from '../components/Questionnaire/QuestionnaireList';
+import QuestionnairePage from '../pages/Questionnaire/QuestionnairePage';
 import ProtectedRoute from './ProtectedRoutes';
 import AnimesInformations from '../pages/AnimesPages/AnimeInformations';
 import { addAuthListener } from '../components/services/auth';
@@ -65,6 +67,14 @@ const router = createBrowserRouter([
     path: '/forum',
     element: <Forum />,
   },
+  {
+  path: '/questionnaires',
+  element: <QuestionnaireList />,
+},
+{
+  path: '/questionnaires/:id',
+  element: <QuestionnairePage />,
+},
   {
     path: '/profile',
     element: (

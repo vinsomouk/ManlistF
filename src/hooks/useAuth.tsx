@@ -112,7 +112,23 @@ export const useAuth = () => {
       } finally {
         setIsLoading(false);
       }
-    }
+    },
+    hasCompletedQuestionnaire: async (questionnaireId: number): Promise<boolean> => {
+  setIsLoading(true);
+  try {
+    const response = await fetch(
+      `http://localhost:8000/api/questionnaires/${questionnaireId}/completed`,
+      { credentials: 'include' }
+    );
+    const data = await response.json();
+    return data.completed;
+  } catch (err) {
+    console.error('Completion check error:', err);
+    return false;
+  } finally {
+    setIsLoading(false);
+  }
+}
   };
 };
 
