@@ -116,8 +116,8 @@
 }
 
 .confirm-btn {
-  background: #10b981;
-  color: white;
+  background: #ffffff;
+  color: rgb(0, 0, 0);
   margin-top: 10px;
 }
 
@@ -263,7 +263,7 @@ button:hover {
 }
 
 .delete-btn {
-  background: #ef4444;
+  background: #3B82F6;
   color: white;
   border: none;
   padding: 10px 15px;

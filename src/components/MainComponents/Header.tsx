@@ -47,7 +47,7 @@ const Header = () => {
               Forum
             </Link>
             <Link to="/lists" className="nav-link">
-              My Lists
+              My List
             </Link>
           </div>
 
