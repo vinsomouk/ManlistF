@@ -5,7 +5,6 @@ import {
   updateWatchlistItem as apiUpdateWatchlistItem, 
   removeFromWatchlist as apiRemoveFromWatchlist,
   type WatchlistItem,
-  type WatchStatus
 } from '../components/services/anilistService';
 import { useAuth } from '../hooks/useAuth';
 
