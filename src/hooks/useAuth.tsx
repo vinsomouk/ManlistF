@@ -80,25 +80,18 @@ export const useAuth = () => {
         setIsLoading(false);
       }
     },
-    updateProfile: async (data: {
-      email: string;
-      nickname: string;
-      profilePicture?: string | null;
-      currentPassword?: string;
-      newPassword?: string;
-    }) => {
-      setIsLoading(true);
-      try {
-        // CORRECTION FINALE : Appel avec un seul argument
-        await apiUpdateProfile(data);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Update failed');
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
-    },
+    updateProfile: async (data: FormData) => {
+  setIsLoading(true);
+  try {
+    await apiUpdateProfile(data);
+    setError(null);
+  } catch (err) {
+    setError(err instanceof Error ? err.message : 'Update failed');
+    throw err;
+  } finally {
+    setIsLoading(false);
+  }
+},
     deleteAccount: async () => {
       setIsLoading(true);
       try {

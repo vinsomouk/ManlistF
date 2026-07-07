@@ -150,40 +150,31 @@ export const checkAuth = async (): Promise<User | null> => {
   }
 };
 
-export const updateProfile = async (
-  data: {
-    email: string;
-    nickname: string;
-    profilePicture?: string | null;
-    currentPassword?: string;
-    newPassword?: string;
-  }
-): Promise<User> => {
-  // CORRECTION : Endpoint correct et méthode PUT
+export const updateProfile = async (data: FormData): Promise<User> => {
   const response = await fetch(`${PROFILE_API_URL}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
     credentials: 'include',
-    body: JSON.stringify(data)
+    body: data
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => null);
-    const errorMessage = errorData?.message || 
-                         (errorData?.errors ? JSON.stringify(errorData.errors) : 'Update failed');
-    throw new Error(errorMessage);
+    const errorText = await response.text();
+    console.error('PROFILE UPDATE RAW ERROR:', errorText);
+    throw new Error(errorText || 'Update failed');
   }
 
   const result = await response.json();
+
   currentUser = {
-    id: result.user.id,
+    id: result.user.id.toString(),
     email: result.user.email,
     nickname: result.user.nickname,
     profilePicture: result.user.profilePicture || null,
-    isVerified: result.user.isVerified,
+    isVerified: result.user.isVerified ?? false,
     createdAt: result.user.createdAt,
     updatedAt: result.user.updatedAt
   };
+
   notifyListeners();
   return currentUser;
 };

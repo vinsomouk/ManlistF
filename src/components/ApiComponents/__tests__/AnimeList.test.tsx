@@ -1,9 +1,15 @@
-// src/components/ApiComponents/AnimeList.test.tsx
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import AnimeList from '../AnimeList';
-import { fetchPopularAnime } from '../../services/anilistService';
 
-jest.mock('../../services/anilistService');
+// Mock du fichier CSS
+jest.mock('../../../styles/Animes/AnimeList.css', () => ({}));
+
+// Mock du service
+jest.mock('../../services/anilistService', () => ({
+  fetchPopularAnime: jest.fn()
+}));
+
+const { fetchPopularAnime } = require('../../services/anilistService');
 
 const mockAnimes = [
   {
@@ -24,17 +30,19 @@ const mockAnimes = [
 
 describe('AnimeList Component', () => {
   beforeEach(() => {
-    (fetchPopularAnime as jest.Mock).mockClear();
+    fetchPopularAnime.mockClear();
+    document.body.innerHTML = '<div id="root"></div>';
   });
 
   it('affiche les animés au chargement initial', async () => {
-    (fetchPopularAnime as jest.Mock).mockResolvedValue({
+    fetchPopularAnime.mockResolvedValue({
       data: mockAnimes,
       pageInfo: { hasNextPage: false }
     });
 
-    render(<AnimeList searchQuery="" filters={{}} />);
-    
+    const container = document.getElementById('root') as HTMLElement;
+    render(<AnimeList searchQuery="" filters={{}} />, { container });
+
     await waitFor(() => {
       expect(screen.getByText('Demon Slayer')).toBeInTheDocument();
       expect(screen.getByText('Attack on Titan')).toBeInTheDocument();
@@ -42,10 +50,11 @@ describe('AnimeList Component', () => {
   });
 
   it('gère correctement les erreurs de l\'API', async () => {
-    (fetchPopularAnime as jest.Mock).mockRejectedValue(new Error('API Error'));
+    fetchPopularAnime.mockRejectedValue(new Error('API Error'));
 
-    render(<AnimeList searchQuery="" filters={{}} />);
-    
+    const container = document.getElementById('root') as HTMLElement;
+    render(<AnimeList searchQuery="" filters={{}} />, { container });
+
     await waitFor(() => {
       expect(screen.getByText('Erreur de chargement')).toBeInTheDocument();
       expect(screen.getByText('Réessayer')).toBeInTheDocument();
@@ -53,18 +62,18 @@ describe('AnimeList Component', () => {
   });
 
   it('permet de réessayer après une erreur', async () => {
-    (fetchPopularAnime as jest.Mock)
+    fetchPopularAnime
       .mockRejectedValueOnce(new Error('API Error'))
-      .mockResolvedValue({
+      .mockResolvedValueOnce({
         data: mockAnimes,
         pageInfo: { hasNextPage: false }
       });
 
-    render(<AnimeList searchQuery="" filters={{}} />);
-    
-    await waitFor(() => {
-      fireEvent.click(screen.getByText('Réessayer'));
-    });
+    const container = document.getElementById('root') as HTMLElement;
+    render(<AnimeList searchQuery="" filters={{}} />, { container });
+
+    const retryButton = await screen.findByText('Réessayer');
+    fireEvent.click(retryButton);
 
     await waitFor(() => {
       expect(fetchPopularAnime).toHaveBeenCalledTimes(2);
@@ -73,13 +82,14 @@ describe('AnimeList Component', () => {
   });
 
   it('applique les filtres correctement', async () => {
-    (fetchPopularAnime as jest.Mock).mockResolvedValue({
+    fetchPopularAnime.mockResolvedValue({
       data: mockAnimes,
       pageInfo: { hasNextPage: false }
     });
 
-    render(<AnimeList searchQuery="demon" filters={{ genre: ['Action'] }} />);
-    
+    const container = document.getElementById('root') as HTMLElement;
+    render(<AnimeList searchQuery="demon" filters={{ genre: ['Action'] }} />, { container });
+
     await waitFor(() => {
       expect(fetchPopularAnime).toHaveBeenCalledWith(
         expect.objectContaining({

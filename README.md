@@ -203,9 +203,7 @@ Créer une nouvelle branche
 
 git checkout -b feature/nouvelle-fonctionnalite
 Écrire les tests associés
-typescript
-11 lines
-Click to expand
+
 // Exemple de test pour un nouveau composant
 import { describe, it, expect } from 'vitest';
 ...

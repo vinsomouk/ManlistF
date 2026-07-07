@@ -2,15 +2,19 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/User/Auth.css';
-import violetVideo from '../../assets/Violet Template.mp4';
+import violetVideo from '../../assets/Violet Evergarden.mp4';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+
+  const [showPassword, setShowPassword] = useState(false);
+
   const [localError, setLocalError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+
   const { login, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -49,20 +53,18 @@ const LoginPage = () => {
     <div className="auth-page-container">
       <div className="video-section">
         <video autoPlay loop muted className="background-video">
-  <source src={violetVideo} type="video/mp4" />
-  Votre navigateur ne supporte pas la vidéo.
-</video>
+          <source src={violetVideo} type="video/mp4" />
+          Votre navigateur ne supporte pas la vidéo.
+        </video>
       </div>
-      
+
       <div className="auth-section">
         <div className="auth-form-wrapper">
           <div className="auth-form">
             <h2>Connexion</h2>
-            
+
             {localError && (
-              <div className="error-message">
-                {localError}
-              </div>
+              <div className="error-message">{localError}</div>
             )}
 
             <form onSubmit={handleSubmit}>
@@ -81,19 +83,28 @@ const LoginPage = () => {
 
               <div className="form-group">
                 <label htmlFor="password">Mot de passe</label>
+
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   required
                   disabled={isLoggingIn || authLoading}
                 />
+
+                <button
+                  type="button"
+                  className="toggle-password"
+                  onClick={() => setShowPassword(prev => !prev)}
+                >
+                  {showPassword ? "Cacher" : "Voir"}
+                </button>
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="auth-button"
                 disabled={isLoggingIn || authLoading}
                 aria-busy={isLoggingIn || authLoading}

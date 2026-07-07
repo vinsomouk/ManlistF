@@ -1,96 +1,80 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth, type User } from '../../hooks/useAuth'; // Import du type User
+import { useAuth, type User } from '../../hooks/useAuth';
 import Header from '../../components/MainComponents/Header';
 import '../../styles/User/Profile.css';
+import defaultAvatar from '../../assets/braver-blank-pfp.jpg';
 
-// Définition des props pour les sous-composants
+const API_BASE_URL = 'http://localhost:8000';
+
+const getImageUrl = (path?: string | null) => {
+  if (!path) return defaultAvatar;
+  if (path.startsWith('http')) return path;
+  return `${API_BASE_URL}${path}`;
+};
+
 interface PersonalInfoTabProps {
   user: User;
-  updateProfile: (data: {
-    email: string;
-    nickname: string;
-    profilePicture?: string | null;
-    currentPassword?: string;
-    newPassword?: string;
-  }) => Promise<void>;
+  updateProfile: (data: FormData) => Promise<void>;
   setSuccessMessage: React.Dispatch<React.SetStateAction<string>>;
   setErrorMessage: React.Dispatch<React.SetStateAction<string>>;
 }
 
-interface PrivacyTabProps {
-  deleteAccount: () => Promise<void>;
-  navigate: (path: string) => void;
-  setErrorMessage: React.Dispatch<React.SetStateAction<string>>;
-}
-
 const ProfilePage = () => {
-  const navigate = useNavigate();
-  const { 
-    user, 
-    isLoading, 
-    updateProfile, 
-    deleteAccount  } = useAuth();
-  
+  const { user, isLoading, updateProfile } = useAuth();
+
   const [activeTab, setActiveTab] = useState<'personal' | 'privacy'>('personal');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setSuccessMessage('');
       setErrorMessage('');
     }, 5000);
+
     return () => clearTimeout(timer);
   }, [successMessage, errorMessage]);
 
-  if (isLoading || !user) return <div className="loading-screen">Chargement...</div>;
+  if (isLoading || !user) return <div>Chargement...</div>;
 
   return (
     <div className="profile-container">
-      <Header/>
-      
+      <Header />
+
       <div className="profile-layout">
-        {/* Sidebar Navigation */}
         <div className="profile-sidebar">
-          <div 
+          <div
             className={`sidebar-item ${activeTab === 'personal' ? 'active' : ''}`}
             onClick={() => setActiveTab('personal')}
           >
-            <i className="icon-user"></i>
-            <span>Informations Personnelles</span>
+            Informations Personnelles
           </div>
-          
-          <div 
+
+          <div
             className={`sidebar-item ${activeTab === 'privacy' ? 'active' : ''}`}
             onClick={() => setActiveTab('privacy')}
           >
-            <i className="icon-lock"></i>
-            <span>Confidentialité</span>
+            Confidentialité
           </div>
-          
         </div>
 
-        {/* Main Content */}
         <div className="profile-content">
           {activeTab === 'personal' && (
-            <PersonalInfoTab 
-              user={user} 
-              updateProfile={updateProfile} 
+            <PersonalInfoTab
+              user={user}
+              updateProfile={updateProfile}
               setSuccessMessage={setSuccessMessage}
               setErrorMessage={setErrorMessage}
             />
           )}
-          
+
           {activeTab === 'privacy' && (
-            <PrivacyTab 
-              deleteAccount={deleteAccount} 
-              navigate={navigate}
-              setErrorMessage={setErrorMessage}
-            />
+            <div className="privacy-tab">
+              <h2>Confidentialité</h2>
+              <p>La suppression du compte sera remise ici ensuite.</p>
+            </div>
           )}
 
-          {/* Messages de notification */}
           {successMessage && <div className="alert success">{successMessage}</div>}
           {errorMessage && <div className="alert error">{errorMessage}</div>}
         </div>
@@ -99,55 +83,74 @@ const ProfilePage = () => {
   );
 };
 
-// Sous-composant pour les informations personnelles
-const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ 
-  user, 
-  updateProfile, 
-  setSuccessMessage, 
-  setErrorMessage 
+const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
+  user,
+  updateProfile,
+  setSuccessMessage,
+  setErrorMessage
 }) => {
-  const [formData, setFormData] = useState({
-    email: user.email,
-    nickname: user.nickname,
-    profilePicture: user.profilePicture || '',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
+  const [email, setEmail] = useState(user.email);
+  const [nickname, setNickname] = useState(user.nickname);
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState(getImageUrl(user.profilePicture));
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
   const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    setPreview(getImageUrl(user.profilePicture));
+  }, [user.profilePicture]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
+
+    if (!selected) return;
+
+    setFile(selected);
+    setPreview(URL.createObjectURL(selected));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsUpdating(true);
-    
-    // Validation des mots de passe
-    if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
+
+    if (newPassword && newPassword !== confirmPassword) {
       setErrorMessage('Les nouveaux mots de passe ne correspondent pas');
-      setIsUpdating(false);
       return;
     }
 
+    setIsUpdating(true);
+
     try {
-      await updateProfile({
-        email: formData.email,
-        nickname: formData.nickname,
-        profilePicture: formData.profilePicture,
-        ...(formData.newPassword && {
-          currentPassword: formData.currentPassword,
-          newPassword: formData.newPassword
-        })
-      });
-      setSuccessMessage('Profil mis à jour avec succès!');
-      // Réinitialiser les champs de mot de passe après succès
-      setFormData(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
-    } catch (error) {
-      console.error('Update failed:', error);
-      // Gestion correcte du type unknown
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        setErrorMessage('Erreur lors de la mise à jour du profil');
+      const formData = new FormData();
+
+      formData.append('email', email);
+      formData.append('nickname', nickname);
+
+      if (file) {
+        formData.append('profilePicture', file);
       }
+
+      if (newPassword) {
+        formData.append('currentPassword', currentPassword);
+        formData.append('newPassword', newPassword);
+      }
+
+      await updateProfile(formData);
+
+      setSuccessMessage('Profil mis à jour avec succès');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setFile(null);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Erreur lors de la mise à jour du profil'
+      );
     } finally {
       setIsUpdating(false);
     }
@@ -156,154 +159,71 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
   return (
     <form onSubmit={handleSubmit} className="profile-form">
       <h2>Informations Personnelles</h2>
-      
-      <div className="form-group">
-        <label>Photo de profil (URL)</label>
-        <input 
-          type="text" 
-          value={formData.profilePicture}
-          onChange={(e) => setFormData({...formData, profilePicture: e.target.value})}
-        />
-        {formData.profilePicture && (
-          <div className="avatar-preview">
-            <img src={formData.profilePicture} alt="Preview" />
-          </div>
-        )}
+
+      <div className="avatar-preview">
+        <img src={preview} alt="avatar" />
       </div>
-      
+
+      <div className="form-group">
+        <label>Photo de profil</label>
+        <input type="file" accept="image/*" onChange={handleFileChange} />
+      </div>
+
       <div className="form-group">
         <label>Pseudo</label>
-        <input 
-          type="text" 
-          value={formData.nickname}
-          onChange={(e) => setFormData({...formData, nickname: e.target.value})}
+        <input
+          type="text"
+          value={nickname}
+          onChange={(e) => setNickname(e.target.value)}
           required
         />
       </div>
-      
+
       <div className="form-group">
         <label>Email</label>
-        <input 
-          type="email" 
-          value={formData.email}
-          onChange={(e) => setFormData({...formData, email: e.target.value})}
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
       </div>
-      
+
       <div className="password-section">
         <h3>Changer le mot de passe</h3>
-        
+
         <div className="form-group">
           <label>Mot de passe actuel</label>
-          <input 
-            type="password" 
-            value={formData.currentPassword}
-            onChange={(e) => setFormData({...formData, currentPassword: e.target.value})}
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
           />
         </div>
-        
+
         <div className="form-group">
           <label>Nouveau mot de passe</label>
-          <input 
-            type="password" 
-            value={formData.newPassword}
-            onChange={(e) => setFormData({...formData, newPassword: e.target.value})}
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
           />
         </div>
-        
+
         <div className="form-group">
           <label>Confirmer le nouveau mot de passe</label>
-          <input 
-            type="password" 
-            value={formData.confirmPassword}
-            onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
           />
         </div>
       </div>
-      
-      <button 
-        type="submit" 
-        className="btn-primary"
-        disabled={isUpdating}
-      >
-        {isUpdating ? 'En cours...' : 'Mettre à jour'}
+
+      <button type="submit" className="btn-primary" disabled={isUpdating}>
+        {isUpdating ? 'Sauvegarde...' : 'Sauvegarder'}
       </button>
     </form>
-  );
-};
-
-// Sous-composant pour la confidentialité
-const PrivacyTab: React.FC<PrivacyTabProps> = ({ 
-  deleteAccount, 
-  navigate,
-  setErrorMessage 
-}) => {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [confirmation, setConfirmation] = useState('');
-
-  const handleDelete = async () => {
-    if (confirmation.toLowerCase() !== 'supprimer') {
-      setErrorMessage('Veuillez taper "supprimer" pour confirmer');
-      return;
-    }
-
-    setIsDeleting(true);
-    try {
-      await deleteAccount();
-      navigate('/');
-    } catch (error) {
-      console.error('Deletion failed:', error);
-      // Gestion correcte du type unknown
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        setErrorMessage('Erreur lors de la suppression du compte');
-      }
-      setIsDeleting(false);
-    }
-  };
-
-  return (
-    <div className="privacy-tab">
-      <h2>Confidentialité</h2>
-      
-      <div className="danger-zone">
-        <h3>Zone dangereuse</h3>
-        
-        <div className="warning-card">
-          <div className="warning-header">
-            <i className="icon-warning"></i>
-            <h4>Supprimer le compte</h4>
-          </div>
-          
-          <p>
-            Cette action est irréversible. Toutes vos données, listes et préférences 
-            seront définitivement supprimées.
-          </p>
-          
-          <div className="confirmation-box">
-            <label>
-              Tapez <strong>"supprimer"</strong> pour confirmer
-            </label>
-            <input 
-              type="text" 
-              value={confirmation}
-              onChange={(e) => setConfirmation(e.target.value)}
-              placeholder="supprimer"
-            />
-          </div>
-          
-          <button 
-            onClick={handleDelete}
-            className="btn-danger"
-            disabled={isDeleting || confirmation.toLowerCase() !== 'supprimer'}
-          >
-            {isDeleting ? 'Suppression en cours...' : 'Supprimer définitivement mon compte'}
-          </button>
-        </div>
-      </div>
-    </div>
   );
 };
 

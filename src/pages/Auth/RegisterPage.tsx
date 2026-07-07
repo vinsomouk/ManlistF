@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { register } from '../../components/services/auth';
 import '../../styles/User/Auth.css';
-import violetVideo from '../../assets/Violet Template.mp4';
+import violetVideo from '../../assets/Violet Evergarden.mp4';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -11,9 +11,14 @@ const RegisterPage = () => {
     password: '',
     passwordConfirm: ''
   });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,25 +32,26 @@ const RegisterPage = () => {
     const hasLowercase = /[a-z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
     const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    
+
     return minLength && hasUppercase && hasLowercase && hasNumber && hasSpecial;
   };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       newErrors.email = 'Email invalide';
     }
-    
+
     if (formData.nickname.length < 3) {
       newErrors.nickname = 'Minimum 3 caractères';
     }
-    
+
     if (!validatePasswordStrength(formData.password)) {
-      newErrors.password = 'Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial';
+      newErrors.password =
+        'Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial';
     }
-    
+
     if (formData.password !== formData.passwordConfirm) {
       newErrors.passwordConfirm = 'Les mots de passe ne correspondent pas';
     }
@@ -78,20 +84,20 @@ const RegisterPage = () => {
     <div className="auth-page-container">
       <div className="video-section">
         <video autoPlay loop muted className="background-video">
-  <source src={violetVideo} type="video/mp4" />
-  Votre navigateur ne supporte pas la vidéo.
-</video>
+          <source src={violetVideo} type="video/mp4" />
+          Votre navigateur ne supporte pas la vidéo.
+        </video>
       </div>
-      
+
       <div className="auth-section">
         <div className="auth-form-wrapper">
           <div className="auth-form">
             <h2>Inscription</h2>
-            
+
             {errors.general && (
               <div className="error-message">{errors.general}</div>
             )}
-            
+
             {successMessage && (
               <div className="success-message">{successMessage}</div>
             )}
@@ -125,34 +131,56 @@ const RegisterPage = () => {
 
               <div className="form-group">
                 <label>Mot de passe</label>
+
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   className={errors.password ? 'error' : ''}
                   required
                 />
-                {errors.password && <span className="error-text">{errors.password}</span>}
+
+                <button
+                  type="button"
+                  className="toggle-password"
+                  onClick={() => setShowPassword(prev => !prev)}
+                >
+                  {showPassword ? "Cacher" : "Voir"}
+                </button>
+
+                {errors.password && (
+                  <span className="error-text">{errors.password}</span>
+                )}
               </div>
 
               <div className="form-group">
                 <label>Confirmer le mot de passe</label>
+
                 <input
-                  type="password"
+                  type={showPasswordConfirm ? "text" : "password"}
                   name="passwordConfirm"
                   value={formData.passwordConfirm}
                   onChange={handleChange}
                   className={errors.passwordConfirm ? 'error' : ''}
                   required
                 />
+
+                <button
+                  type="button"
+                  className="toggle-password"
+                  onClick={() => setShowPasswordConfirm(prev => !prev)}
+                >
+                  {showPasswordConfirm ? "Cacher" : "Voir"}
+                </button>
+
                 {errors.passwordConfirm && (
                   <span className="error-text">{errors.passwordConfirm}</span>
                 )}
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={isLoading}
                 className="auth-button"
               >

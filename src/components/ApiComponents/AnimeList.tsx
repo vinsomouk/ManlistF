@@ -74,8 +74,11 @@ const AnimeList: React.FC<AnimeListProps> = ({ searchQuery, filters }) => {
     }
   }, [page, debouncedSearch, debouncedFilters, loading]);
 
-  // Gestion du scroll infini
+  // Gestion du scroll infini (version compatible avec les tests)
   useEffect(() => {
+    // Vérifier si window est disponible (pour les tests)
+    if (typeof window === 'undefined') return;
+
     const handleScroll = () => {
       if (
         window.innerHeight + document.documentElement.scrollTop >= 
@@ -106,56 +109,54 @@ const AnimeList: React.FC<AnimeListProps> = ({ searchQuery, filters }) => {
 
   return (
     <div className="anime-app-container">
-        
-        {error && (
-          <div className="error-state">
-            <p className="error-message">{error}</p>
-            <button onClick={() => loadData(true)} className="refresh-button">
-              Réessayer
-            </button>
-          </div>
-        )}
-
-        <div className="anime-grid">
-          {animes.map(anime => (
-            <div key={anime.id} className="anime-grid-item">
-              <Link 
-                to={`/anime/${anime.id}`} 
-                className="anime-card"
-              >
-                <div className="anime-card-image-container">
-                  {anime.coverImage?.large ? (
-                    <img 
-                      src={anime.coverImage?.large} 
-                      alt={anime.title?.english || anime.title?.romaji || 'Cover'} 
-                      loading="lazy"
-                      decoding="async"
-                      className="anime-card-image"
-                    />
-                  ) : (
-                    <div className="anime-card-placeholder">No Image</div>
-                  )}
-                </div>
-                <div className="anime-card-content">
-                  <h3 className="anime-title">{anime.title?.english || anime.title?.romaji || 'Titre inconnu'}</h3>
-                  <div className="anime-meta">
-                    <span>⭐ {anime.averageScore || 'N/A'}</span>
-                    <p>{anime.genres?.join(' • ') || 'Genres non disponibles'}</p>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          ))}
+      {error && (
+        <div className="error-state">
+          <p className="error-message">{error}</p>
+          <button onClick={() => loadData(true)} className="refresh-button">
+            Réessayer
+          </button>
         </div>
+      )}
 
-        {loading && <div className="loading-spinner">Chargement...</div>}
-
-        {!loading && animes.length === 0 && !error && (
-          <div className="no-results">
-            <p>Aucun anime trouvé</p>
+      <div className="anime-grid">
+        {animes.map(anime => (
+          <div key={anime.id} className="anime-grid-item">
+            <Link 
+              to={`/anime/${anime.id}`} 
+              className="anime-card"
+            >
+              <div className="anime-card-image-container">
+                {anime.coverImage?.large ? (
+                  <img 
+                    src={anime.coverImage?.large} 
+                    alt={anime.title?.english || anime.title?.romaji || 'Cover'} 
+                    loading="lazy"
+                    decoding="async"
+                    className="anime-card-image"
+                  />
+                ) : (
+                  <div className="anime-card-placeholder">No Image</div>
+                )}
+              </div>
+              <div className="anime-card-content">
+                <h3 className="anime-title">{anime.title?.english || anime.title?.romaji || 'Titre inconnu'}</h3>
+                <div className="anime-meta">
+                  <span>⭐ {anime.averageScore || 'N/A'}</span>
+                  <p>{anime.genres?.join(' • ') || 'Genres non disponibles'}</p>
+                </div>
+              </div>
+            </Link>
           </div>
-        )}
-      
+        ))}
+      </div>
+
+      {loading && <div className="loading-spinner">Chargement...</div>}
+
+      {!loading && animes.length === 0 && !error && (
+        <div className="no-results">
+          <p>Aucun anime trouvé</p>
+        </div>
+      )}
     </div>
   );
 };
