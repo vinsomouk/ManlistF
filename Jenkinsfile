@@ -3,6 +3,12 @@ pipeline {
         label 'Agent_Manlist_Front'
     }
 
+    options {
+        skipDefaultCheckout(true)
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
     environment {
         DOCKER_IMAGE = 'manlist-front'
         CI = 'true'
@@ -15,28 +21,43 @@ pipeline {
             }
         }
 
+        stage('Check Environment') {
+            steps {
+                sh '''
+                    node --version
+                    npm --version
+                    docker --version
+                    docker info
+                '''
+            }
+        }
+
         stage('Install') {
             steps {
-                sh 'pnpm install --frozen-lockfile'
+                sh 'npm ci'
             }
         }
 
         stage('Lint') {
             steps {
-                sh 'pnpm run lint'
+                sh 'npm run lint'
             }
         }
 
-       stage('Tests') {
-    steps {
-        echo 'Tests Vitest désactivés temporairement'
-    }
-}
+        stage('Tests') {
+            steps {
+                echo 'Tests Vitest désactivés temporairement'
+            }
+        }
 
         stage('Build') {
             steps {
-                sh 'pnpm run build'
-                archiveArtifacts artifacts: 'dist/**', fingerprint: true
+                sh 'npm run build'
+
+                archiveArtifacts(
+                    artifacts: 'dist/**',
+                    fingerprint: true
+                )
             }
         }
 
@@ -53,17 +74,23 @@ pipeline {
 
         stage('Security Scan') {
             when {
-                expression { false }
+                expression {
+                    return false
+                }
             }
+
             steps {
-                sh 'pnpm audit --prod'
+                sh 'npm audit --omit=dev --audit-level=high'
             }
         }
 
         stage('Push Registry') {
             when {
-                expression { false }
+                expression {
+                    return false
+                }
             }
+
             steps {
                 echo 'Push Docker à configurer plus tard'
             }
@@ -71,8 +98,11 @@ pipeline {
 
         stage('Deploy') {
             when {
-                expression { false }
+                expression {
+                    return false
+                }
             }
+
             steps {
                 echo 'Déploiement à configurer plus tard'
             }
@@ -80,6 +110,14 @@ pipeline {
     }
 
     post {
+        success {
+            echo "Frontend construit : ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+        }
+
+        failure {
+            echo "Échec du pipeline frontend : ${BUILD_URL}"
+        }
+
         always {
             cleanWs()
         }
