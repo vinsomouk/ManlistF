@@ -1,30 +1,32 @@
-# Build stage
-FROM node:18-alpine as builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
-COPY package*.json ./
-COPY pnpm-lock.yaml ./
 
 RUN corepack enable && \
-    pnpm install --frozen-lockfile
+    corepack prepare pnpm@9 --activate
+
+COPY package.json pnpm-lock.yaml ./
+
+RUN pnpm install --frozen-lockfile
 
 COPY . .
+
 RUN pnpm run build
 
-# Production stage
-FROM nginx:1.23-alpine
 
-# Copier les fichiers buildés
-COPY --from=builder /app/dist /usr/share/nginx/html
+FROM nginx:1.27-alpine
 
-# Configurer Nginx
+RUN apk add --no-cache curl
+
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Sécurité : Supprimer les headers sensibles
-RUN echo "server_tokens off;" >> /etc/nginx/nginx.conf && \
-    sed -i 's/^http {/http {\n    proxy_hide_header X-Powered-By;/' /etc/nginx/nginx.conf
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Ports et santé
 EXPOSE 80
-HEALTHCHECK --interval=30s --timeout=3s \
-    CMD curl -f http://localhost/ || exit 1
+
+HEALTHCHECK --interval=30s \
+            --timeout=5s \
+            --retries=3 \
+CMD curl --fail http://localhost || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]
