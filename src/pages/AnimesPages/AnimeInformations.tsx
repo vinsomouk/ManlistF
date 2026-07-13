@@ -4,9 +4,6 @@ import {
   fetchAnimeDetails, 
   type WatchStatus,
   type AnimeDetails,
-  type StaffEdge,
-  type CharacterEdge,
-  type Ranking
 } from '../../components/services/anilistService';
 import Header from '../../components/MainComponents/Header';
 import '../../styles/Animes/AnimeDetails.css';

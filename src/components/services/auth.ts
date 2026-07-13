@@ -1,24 +1,6 @@
 const API_URL = 'http://localhost:8000/api/auth';
 const PROFILE_API_URL = 'http://localhost:8000/api/profile';
 
-// État global géré par le service
-let currentUser: User | null = null;
-type AuthListener = (user: User | null) => void;
-let listeners: AuthListener[] = [];
-
-const notifyListeners = () => {
-  listeners.forEach(listener => listener(currentUser));
-};
-
-export const addAuthListener = (listener: AuthListener) => {
-  listeners.push(listener);
-  return () => {
-    listeners = listeners.filter(l => l !== listener);
-  };
-};
-
-export const getCurrentUser = (): User | null => currentUser;
-
 export interface User {
   id: string;
   email: string;
@@ -29,183 +11,294 @@ export interface User {
   updatedAt: string;
 }
 
+interface AuthErrorResponse {
+  error?: string;
+  errors?: string[];
+  message?: string;
+}
+
+interface UserApiResponse {
+  id: string | number;
+  email: string;
+  nickname: string;
+  profilePicture?: string | null;
+  isVerified?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface UpdateProfileResponse {
+  user: UserApiResponse;
+}
+
+type AuthListener = (user: User | null) => void;
+
+let currentUser: User | null = null;
+let listeners: AuthListener[] = [];
+
+async function parseJson<T>(
+  response: Response,
+): Promise<T> {
+  return response.json() as Promise<T>;
+}
+
+const toUser = (data: UserApiResponse): User => ({
+  id: data.id.toString(),
+  email: data.email,
+  nickname: data.nickname,
+  profilePicture: data.profilePicture ?? null,
+  isVerified: data.isVerified ?? false,
+  createdAt: data.createdAt,
+  updatedAt: data.updatedAt,
+});
+
+const notifyListeners = (): void => {
+  listeners.forEach((listener) => {
+    listener(currentUser);
+  });
+};
+
+const clearBrowserCookies = (): void => {
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  document.cookie.split(';').forEach((cookie: string) => {
+    const [name] = cookie.split('=');
+
+    if (!name) {
+      return;
+    }
+
+    document.cookie =
+      `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+  });
+};
+
+const setForceLogout = (): void => {
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(
+      'forceLogout',
+      Date.now().toString(),
+    );
+  }
+};
+
+export const addAuthListener = (
+  listener: AuthListener,
+): (() => void) => {
+  listeners.push(listener);
+
+  return () => {
+    listeners = listeners.filter(
+      (registeredListener) =>
+        registeredListener !== listener,
+    );
+  };
+};
+
+export const getCurrentUser = (): User | null => {
+  return currentUser;
+};
+
 export const register = async (
   email: string,
   nickname: string,
   password: string,
-  profilePicture?: string | null
+  profilePicture?: string | null,
 ): Promise<User> => {
   const response = await fetch(`${API_URL}/register`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, nickname, password, profilePicture }),
-    credentials: 'include'
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email,
+      nickname,
+      password,
+      profilePicture,
+    }),
+    credentials: 'include',
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => null);
-    // Gestion améliorée des erreurs
-    const errorMessage = errorData?.error || 
-                        (errorData?.errors ? errorData.errors.join(', ') : 'Registration failed');
+    const errorData = await parseJson<AuthErrorResponse>(
+      response,
+    ).catch(() => null);
+
+    const errorMessage =
+      errorData?.error ??
+      errorData?.message ??
+      (errorData?.errors?.length
+        ? errorData.errors.join(', ')
+        : 'Registration failed');
+
     throw new Error(errorMessage);
   }
 
-  const data = await response.json();
-  currentUser = {
-    id: data.id.toString(), // Convertir en string
-    email: data.email,
-    nickname: data.nickname,
-    profilePicture: data.profilePicture || null,
-    isVerified: data.isVerified,
-    createdAt: data.createdAt,
-    updatedAt: data.updatedAt
-  };
+  const data = await parseJson<UserApiResponse>(response);
+
+  currentUser = toUser(data);
   notifyListeners();
+
   return currentUser;
 };
 
-export const login = async (email: string, password: string): Promise<User> => {
+export const login = async (
+  email: string,
+  password: string,
+): Promise<User> => {
   const response = await fetch(`${API_URL}/login`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-    credentials: 'include'
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+    credentials: 'include',
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => null);
-    throw new Error(error?.message || 'Login failed');
+    const errorData = await parseJson<AuthErrorResponse>(
+      response,
+    ).catch(() => null);
+
+    throw new Error(
+      errorData?.message ??
+        errorData?.error ??
+        'Login failed',
+    );
   }
 
-  const data = await response.json();
-  currentUser = {
-    id: data.id,
-    email: data.email,
-    nickname: data.nickname,
-    profilePicture: data.profilePicture || null,
-    isVerified: data.isVerified,
-    createdAt: data.createdAt,
-    updatedAt: data.updatedAt
-  };
+  const data = await parseJson<UserApiResponse>(response);
+
+  currentUser = toUser(data);
   notifyListeners();
+
   return currentUser;
 };
 
 export const logout = async (): Promise<void> => {
   try {
-    // Appel API au backend
     await fetch(`${API_URL}/logout`, {
       method: 'POST',
-      credentials: 'include'
+      credentials: 'include',
     });
 
-    // Effacer tous les cookies manuellement
-    document.cookie.split(';').forEach(cookie => {
-      const [name] = cookie.split('=');
-      document.cookie = `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-    });
+    clearBrowserCookies();
+    setForceLogout();
 
-    // Marquer la déconnexion forcée
-    localStorage.setItem('forceLogout', Date.now().toString());
-    
-    // Réinitialiser l'état
     currentUser = null;
     notifyListeners();
-    
-    console.log('Déconnexion réussie');
-  } catch (err) {
-    console.error('Erreur lors de la déconnexion:', err);
-    // Activer quand même la déconnexion forcée en cas d'erreur
-    localStorage.setItem('forceLogout', Date.now().toString());
+  } catch (caughtError) {
+    console.error(
+      'Erreur lors de la déconnexion :',
+      caughtError,
+    );
+
+    setForceLogout();
+
     currentUser = null;
     notifyListeners();
+
     throw new Error('Logout failed');
   }
 };
 
-export const checkAuth = async (): Promise<User | null> => {
-  try {
-    const response = await fetch(`${API_URL}/check`, {
-      credentials: 'include'
-    });
+export const checkAuth =
+  async (): Promise<User | null> => {
+    try {
+      const response = await fetch(`${API_URL}/check`, {
+        credentials: 'include',
+      });
 
-    if (response.ok) {
-      const data = await response.json();
-      currentUser = {
-        id: data.id,
-        email: data.email,
-        nickname: data.nickname,
-        profilePicture: data.profilePicture || null,
-        isVerified: data.isVerified,
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt
-      };
+      if (!response.ok) {
+        currentUser = null;
+        notifyListeners();
+        return null;
+      }
+
+      const data =
+        await parseJson<UserApiResponse>(response);
+
+      currentUser = toUser(data);
       notifyListeners();
-      return currentUser;
-    }
-    return null;
-  } catch (error) {
-    console.error('Erreur lors de la vérification d\'authentification:', error);
-    return null;
-  }
-};
 
-export const updateProfile = async (data: FormData): Promise<User> => {
-  const response = await fetch(`${PROFILE_API_URL}`, {
+      return currentUser;
+    } catch (caughtError) {
+      console.error(
+        "Erreur lors de la vérification d'authentification :",
+        caughtError,
+      );
+
+      currentUser = null;
+      notifyListeners();
+
+      return null;
+    }
+  };
+
+export const updateProfile = async (
+  formData: FormData,
+): Promise<User> => {
+  const response = await fetch(PROFILE_API_URL, {
     method: 'POST',
     credentials: 'include',
-    body: data
+    body: formData,
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('PROFILE UPDATE RAW ERROR:', errorText);
+
+    console.error(
+      'PROFILE UPDATE RAW ERROR:',
+      errorText,
+    );
+
     throw new Error(errorText || 'Update failed');
   }
 
-  const result = await response.json();
+  const result =
+    await parseJson<UpdateProfileResponse>(response);
 
-  currentUser = {
-    id: result.user.id.toString(),
-    email: result.user.email,
-    nickname: result.user.nickname,
-    profilePicture: result.user.profilePicture || null,
-    isVerified: result.user.isVerified ?? false,
-    createdAt: result.user.createdAt,
-    updatedAt: result.user.updatedAt
-  };
-
+  currentUser = toUser(result.user);
   notifyListeners();
+
   return currentUser;
 };
 
 export const deleteAccount = async (): Promise<void> => {
-  // CORRECTION : Utilisation du bon endpoint
-  const response = await fetch(`${PROFILE_API_URL}`, {
+  const response = await fetch(PROFILE_API_URL, {
     method: 'DELETE',
-    credentials: 'include'
+    credentials: 'include',
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => null);
-    throw new Error(error?.message || 'Account deletion failed');
+    const errorData = await parseJson<AuthErrorResponse>(
+      response,
+    ).catch(() => null);
+
+    throw new Error(
+      errorData?.message ??
+        errorData?.error ??
+        'Account deletion failed',
+    );
   }
-  
-  // Effacer tous les cookies après suppression du compte
-  document.cookie.split(';').forEach(cookie => {
-    const [name] = cookie.split('=');
-    document.cookie = `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-  });
-  
-  localStorage.setItem('forceLogout', Date.now().toString());
+
+  clearBrowserCookies();
+  setForceLogout();
+
   currentUser = null;
   notifyListeners();
 };
 
-if (localStorage.getItem('forceLogout')) {
-  currentUser = null;
-  localStorage.removeItem('forceLogout');
-}
+if (typeof window !== 'undefined') {
+  if (window.localStorage.getItem('forceLogout')) {
+    currentUser = null;
+    window.localStorage.removeItem('forceLogout');
+  }
 
-// Initial check au chargement
-checkAuth();
+  void checkAuth();
+}

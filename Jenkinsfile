@@ -46,7 +46,7 @@ pipeline {
 
         stage('Tests') {
             steps {
-                echo 'Tests Vitest désactivés temporairement'
+                echo 'Tests Vitest temporairement désactivés'
             }
         }
 

@@ -1,6 +1,7 @@
-// src/hooks/useAuth.tsx
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
 import type { User } from '../components/services/auth';
+
 import {
   getCurrentUser,
   addAuthListener,
@@ -9,54 +10,196 @@ import {
   register as apiRegister,
   checkAuth as apiCheckAuth,
   updateProfile as apiUpdateProfile,
-  deleteAccount as apiDeleteAccount
+  deleteAccount as apiDeleteAccount,
 } from '../components/services/auth';
 
+interface QuestionnaireCompletionResponse {
+  completed: boolean;
+}
+
+async function parseJson<T>(
+  response: Response,
+): Promise<T> {
+  return response.json() as Promise<T>;
+}
+
 export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(getCurrentUser());
+  const [user, setUser] = useState<User | null>(
+    getCurrentUser(),
+  );
+
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  const [error, setError] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     const unsubscribe = addAuthListener(setUser);
-    
-    const checkAuth = async () => {
+
+    const initializeAuth = async (): Promise<void> => {
       setIsLoading(true);
+
       try {
         await apiCheckAuth();
-      } catch (err) {
-        console.error('Auth check error:', err);
+      } catch (caughtError) {
+        console.error(
+          'Auth check error:',
+          caughtError,
+        );
       } finally {
         setIsLoading(false);
       }
     };
-    
-    checkAuth();
-    
+
+    void initializeAuth();
+
     return unsubscribe;
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (
+    email: string,
+    password: string,
+  ): Promise<void> => {
     setIsLoading(true);
+
     try {
       await apiLogin(email, password);
       setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
-      throw err;
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Login failed',
+      );
+
+      throw caughtError;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     setIsLoading(true);
+
     try {
       await apiLogout();
       setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Logout failed');
-      throw err;
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Logout failed',
+      );
+
+      throw caughtError;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const register = async (
+    email: string,
+    nickname: string,
+    password: string,
+    profilePicture?: string,
+  ): Promise<void> => {
+    setIsLoading(true);
+
+    try {
+      await apiRegister(
+        email,
+        nickname,
+        password,
+        profilePicture,
+      );
+
+      setError(null);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Registration failed',
+      );
+
+      throw caughtError;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateProfile = async (
+    formData: FormData,
+  ): Promise<void> => {
+    setIsLoading(true);
+
+    try {
+      await apiUpdateProfile(formData);
+      setError(null);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Update failed',
+      );
+
+      throw caughtError;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteAccount = async (): Promise<void> => {
+    setIsLoading(true);
+
+    try {
+      await apiDeleteAccount();
+
+      setError(null);
+      setUser(null);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Deletion failed',
+      );
+
+      throw caughtError;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const hasCompletedQuestionnaire = async (
+    questionnaireId: number,
+  ): Promise<boolean> => {
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/questionnaires/${questionnaireId}/completed`,
+        {
+          credentials: 'include',
+        },
+      );
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const data =
+        await parseJson<QuestionnaireCompletionResponse>(
+          response,
+        );
+
+      return data.completed;
+    } catch (caughtError) {
+      console.error(
+        'Completion check error:',
+        caughtError,
+      );
+
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -68,60 +211,10 @@ export const useAuth = () => {
     error,
     login,
     logout,
-    register: async (email: string, nickname: string, password: string, profilePicture?: string) => {
-      setIsLoading(true);
-      try {
-        await apiRegister(email, nickname, password, profilePicture);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Registration failed');
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    updateProfile: async (data: FormData) => {
-  setIsLoading(true);
-  try {
-    await apiUpdateProfile(data);
-    setError(null);
-  } catch (err) {
-    setError(err instanceof Error ? err.message : 'Update failed');
-    throw err;
-  } finally {
-    setIsLoading(false);
-  }
-},
-    deleteAccount: async () => {
-      setIsLoading(true);
-      try {
-        // CORRECTION FINALE : Appel sans argument
-        await apiDeleteAccount();
-        setError(null);
-        setUser(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Deletion failed');
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    hasCompletedQuestionnaire: async (questionnaireId: number): Promise<boolean> => {
-  setIsLoading(true);
-  try {
-    const response = await fetch(
-      `http://localhost:8000/api/questionnaires/${questionnaireId}/completed`,
-      { credentials: 'include' }
-    );
-    const data = await response.json();
-    return data.completed;
-  } catch (err) {
-    console.error('Completion check error:', err);
-    return false;
-  } finally {
-    setIsLoading(false);
-  }
-}
+    register,
+    updateProfile,
+    deleteAccount,
+    hasCompletedQuestionnaire,
   };
 };
 

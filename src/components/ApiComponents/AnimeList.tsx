@@ -1,7 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchPopularAnime } from '../services/anilistService';
-import type { Anime, PageInfo, FetchOptions } from '../services/anilistService';
+import type {
+  Anime,
+  PageInfo,
+  FetchOptions,
+} from '../services/anilistService';
 import '../../styles/Animes/AnimeList.css';
 
 interface AnimeListProps {
@@ -9,8 +13,26 @@ interface AnimeListProps {
   filters: FetchOptions;
 }
 
-const AnimeList: React.FC<AnimeListProps> = ({ searchQuery, filters }) => {
-  // États
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = window.setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      window.clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+const AnimeList: React.FC<AnimeListProps> = ({
+  searchQuery,
+  filters,
+}) => {
   const [animes, setAnimes] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,130 +41,166 @@ const AnimeList: React.FC<AnimeListProps> = ({ searchQuery, filters }) => {
     total: 0,
     currentPage: 1,
     lastPage: 1,
-    hasNextPage: false
+    hasNextPage: false,
   });
 
-  // Debounce pour optimiser les requêtes
-  const useDebounce = (value: any, delay: number) => {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-
-    useEffect(() => {
-      const handler = setTimeout(() => {
-        setDebouncedValue(value);
-      }, delay);
-
-      return () => {
-        clearTimeout(handler);
-      };
-    }, [value, delay]);
-
-    return debouncedValue;
-  };
+  const loadingRef = useRef(false);
 
   const debouncedSearch = useDebounce(searchQuery, 500);
   const debouncedFilters = useDebounce(filters, 500);
 
-  // Fonction principale de chargement
-  const loadData = useCallback(async (isNewSearch: boolean = false) => {
-    if (loading) return;
+  const loadData = useCallback(
+    async (isNewSearch = false) => {
+      if (loadingRef.current) {
+        return;
+      }
 
-    setLoading(true);
-    setError(null);
+      loadingRef.current = true;
+      setLoading(true);
+      setError(null);
 
-    try {
-      const currentPage = isNewSearch ? 1 : page;
-      const { data, pageInfo: newPageInfo } = await fetchPopularAnime({
-        page: currentPage,
-        perPage: 20,
-        search: debouncedSearch.trim() || undefined,
-        ...debouncedFilters
-      });
+      try {
+        const currentPage = isNewSearch ? 1 : page;
 
-      setAnimes(prev => 
-        isNewSearch 
-          ? data || []
-          : [...prev, ...data?.filter(a => !prev.some(b => b.id === a.id)) || []]
-      );
-      
-      setPageInfo(newPageInfo);
-    } catch (err) {
-      console.error('Erreur:', err);
-      setError(err instanceof Error ? err.message : 'Erreur de chargement');
-      setAnimes([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, debouncedSearch, debouncedFilters, loading]);
+        const {
+          data,
+          pageInfo: newPageInfo,
+        } = await fetchPopularAnime({
+          page: currentPage,
+          perPage: 20,
+          search: debouncedSearch.trim() || undefined,
+          ...debouncedFilters,
+        });
 
-  // Gestion du scroll infini (version compatible avec les tests)
+        setAnimes((previousAnimes) => {
+          if (isNewSearch) {
+            return data ?? [];
+          }
+
+          const newAnimes =
+            data?.filter(
+              (anime) =>
+                !previousAnimes.some(
+                  (existingAnime) => existingAnime.id === anime.id,
+                ),
+            ) ?? [];
+
+          return [...previousAnimes, ...newAnimes];
+        });
+
+        setPageInfo(newPageInfo);
+      } catch (caughtError) {
+        console.error('Erreur:', caughtError);
+
+        setError(
+          caughtError instanceof Error
+            ? caughtError.message
+            : 'Erreur de chargement',
+        );
+
+        setAnimes([]);
+      } finally {
+        loadingRef.current = false;
+        setLoading(false);
+      }
+    },
+    [page, debouncedSearch, debouncedFilters],
+  );
+
   useEffect(() => {
-    // Vérifier si window est disponible (pour les tests)
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+      return;
+    }
 
     const handleScroll = () => {
+      const isNearBottom =
+        window.innerHeight +
+          document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight - 500;
+
       if (
-        window.innerHeight + document.documentElement.scrollTop >= 
-        document.documentElement.offsetHeight - 500 &&
-        !loading && 
+        isNearBottom &&
+        !loadingRef.current &&
         pageInfo.hasNextPage
       ) {
-        setPage(prev => prev + 1);
+        setPage((previousPage) => previousPage + 1);
       }
     };
 
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [loading, pageInfo.hasNextPage]);
 
-  // Effet pour recherche et filtres
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [pageInfo.hasNextPage]);
+
   useEffect(() => {
-    loadData(true);
     setPage(1);
-  }, [debouncedSearch, debouncedFilters]);
+    void loadData(true);
+  }, [debouncedSearch, debouncedFilters, loadData]);
 
-  // Effet pour pagination
   useEffect(() => {
     if (page > 1) {
-      loadData(false);
+      void loadData(false);
     }
-  }, [page]);
+  }, [page, loadData]);
 
   return (
     <div className="anime-app-container">
       {error && (
         <div className="error-state">
           <p className="error-message">{error}</p>
-          <button onClick={() => loadData(true)} className="refresh-button">
+
+          <button
+            onClick={() => void loadData(true)}
+            className="refresh-button"
+          >
             Réessayer
           </button>
         </div>
       )}
 
       <div className="anime-grid">
-        {animes.map(anime => (
+        {animes.map((anime) => (
           <div key={anime.id} className="anime-grid-item">
-            <Link 
-              to={`/anime/${anime.id}`} 
+            <Link
+              to={`/anime/${anime.id}`}
               className="anime-card"
             >
               <div className="anime-card-image-container">
                 {anime.coverImage?.large ? (
-                  <img 
-                    src={anime.coverImage?.large} 
-                    alt={anime.title?.english || anime.title?.romaji || 'Cover'} 
+                  <img
+                    src={anime.coverImage.large}
+                    alt={
+                      anime.title?.english ||
+                      anime.title?.romaji ||
+                      'Cover'
+                    }
                     loading="lazy"
                     decoding="async"
                     className="anime-card-image"
                   />
                 ) : (
-                  <div className="anime-card-placeholder">No Image</div>
+                  <div className="anime-card-placeholder">
+                    No Image
+                  </div>
                 )}
               </div>
+
               <div className="anime-card-content">
-                <h3 className="anime-title">{anime.title?.english || anime.title?.romaji || 'Titre inconnu'}</h3>
+                <h3 className="anime-title">
+                  {anime.title?.english ||
+                    anime.title?.romaji ||
+                    'Titre inconnu'}
+                </h3>
+
                 <div className="anime-meta">
                   <span>⭐ {anime.averageScore || 'N/A'}</span>
-                  <p>{anime.genres?.join(' • ') || 'Genres non disponibles'}</p>
+
+                  <p>
+                    {anime.genres?.join(' • ') ||
+                      'Genres non disponibles'}
+                  </p>
                 </div>
               </div>
             </Link>
@@ -150,7 +208,9 @@ const AnimeList: React.FC<AnimeListProps> = ({ searchQuery, filters }) => {
         ))}
       </div>
 
-      {loading && <div className="loading-spinner">Chargement...</div>}
+      {loading && (
+        <div className="loading-spinner">Chargement...</div>
+      )}
 
       {!loading && animes.length === 0 && !error && (
         <div className="no-results">

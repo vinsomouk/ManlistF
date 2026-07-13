@@ -1,28 +1,28 @@
+FROM docker:27-cli AS docker-cli
+
 FROM jenkins/inbound-agent:latest-jdk21
 
 USER root
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    ca-certificates \
-    curl \
-    git \
-    gnupg \
-    build-essential \
-    docker.io && \
+        ca-certificates \
+        curl \
+        git \
+        gnupg \
+        build-essential && \
     rm -rf /var/lib/apt/lists/*
 
-# Node.js 22
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get update && \
-    apt-get install -y nodejs && \
+    apt-get install -y --no-install-recommends nodejs && \
     rm -rf /var/lib/apt/lists/*
 
-# pnpm
-RUN corepack enable && \
-    corepack prepare pnpm@9 --activate
+COPY --from=docker-cli /usr/local/bin/docker /usr/local/bin/docker
 
-RUN usermod -aG docker jenkins
+RUN node --version && \
+    npm --version && \
+    docker --version
 
 USER jenkins
 

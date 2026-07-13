@@ -3,6 +3,12 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/Questionnaire/QuestionnairePromo.css';
 
+interface QuestionnaireResponse {
+  questionnaire?: {
+    id: number;
+  };
+}
+
 const QuestionnairePromo = () => {
   const { user } = useAuth();
   const [showPromo, setShowPromo] = useState(false);
@@ -10,53 +16,82 @@ const QuestionnairePromo = () => {
 
   useEffect(() => {
     const checkCompletion = async () => {
-      if (!user) return;
-      
-      try {
-        // Vérifier directement si l'utilisateur a complété un questionnaire
-        const response = await fetch(`http://localhost:8000/api/user/${user.id}/responses`, {
-          credentials: 'include',
-          headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+      if (!user) {
+        setShowPromo(false);
+        setIsLoading(false);
+        return;
       }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          // Vérifie si l'utilisateur a complété le questionnaire principal (ID=1)
-          const hasCompleted = data.some((response: any) => 
-            response.questionnaire && response.questionnaire.id === 1
+
+      try {
+        const response = await fetch(
+          `http://localhost:8000/api/user/${user.id}/responses`,
+          {
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Erreur HTTP ${response.status}`,
           );
-          setShowPromo(!hasCompleted);
         }
-      } catch (error) {
-        console.error('Failed to check questionnaire completion', error);
+
+        const data =
+          (await response.json()) as QuestionnaireResponse[];
+
+        const hasCompleted = data.some(
+          (userResponse) =>
+            userResponse.questionnaire?.id === 1,
+        );
+
+        setShowPromo(!hasCompleted);
+      } catch (caughtError) {
+        console.error(
+          'Failed to check questionnaire completion',
+          caughtError,
+        );
+
+        setShowPromo(false);
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkCompletion();
+    void checkCompletion();
   }, [user]);
 
-  if (!showPromo || isLoading) return null;
+  if (!showPromo || isLoading) {
+    return null;
+  }
 
   return (
     <div className="questionnaire-promo">
       <div className="promo-content">
         <h3>Découvrez des animés adaptés à vos goûts !</h3>
+
         <p>
-          Répondez à notre court questionnaire pour obtenir des recommandations personnalisées
-          basées sur vos préférences.
+          Répondez à notre court questionnaire pour obtenir des
+          recommandations personnalisées basées sur vos
+          préférences.
         </p>
-        <Link to="/questionnaires" className="btn-promo">
+
+        <Link
+          to="/questionnaires"
+          className="btn-promo"
+        >
           Commencer le questionnaire
         </Link>
       </div>
-      <button 
+
+      <button
         className="close-btn"
         onClick={() => setShowPromo(false)}
+        type="button"
+        aria-label="Fermer la promotion"
       >
         &times;
       </button>

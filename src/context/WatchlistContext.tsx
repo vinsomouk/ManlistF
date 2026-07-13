@@ -1,125 +1,227 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { 
-  getWatchlist, 
-  addToWatchlist as apiAddToWatchlist, 
-  updateWatchlistItem as apiUpdateWatchlistItem, 
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from 'react';
+
+import {
+  getWatchlist,
+  addToWatchlist as apiAddToWatchlist,
+  updateWatchlistItem as apiUpdateWatchlistItem,
   removeFromWatchlist as apiRemoveFromWatchlist,
   type WatchlistItem,
 } from '../components/services/anilistService';
+
 import { useAuth } from '../hooks/useAuth';
+
+type EditableWatchlistFields = Omit<
+  WatchlistItem,
+  'animeId' | 'animeTitle' | 'animeImage'
+>;
+
+type NewWatchlistItem = Omit<
+  WatchlistItem,
+  'animeTitle' | 'animeImage'
+>;
 
 type WatchlistContextType = {
   watchlist: WatchlistItem[];
   loading: boolean;
   error: string | null;
-  addToWatchlist: (item: Omit<WatchlistItem, 'animeTitle' | 'animeImage'>) => Promise<WatchlistItem>;
-  removeFromWatchlist: (animeId: number) => Promise<void>;
-  updateWatchlistItem: (animeId: number, updates: Partial<Omit<WatchlistItem, 'animeId' | 'animeTitle' | 'animeImage'>>) => Promise<void>;
+  addToWatchlist: (
+    item: NewWatchlistItem,
+  ) => Promise<WatchlistItem>;
+  removeFromWatchlist: (
+    animeId: number,
+  ) => Promise<void>;
+  updateWatchlistItem: (
+    animeId: number,
+    updates: Partial<EditableWatchlistFields>,
+  ) => Promise<void>;
   fetchWatchlist: () => Promise<void>;
 };
 
-const WatchlistContext = createContext<WatchlistContextType | undefined>(undefined);
+const WatchlistContext = createContext<
+  WatchlistContextType | undefined
+>(undefined);
 
-export const WatchlistProvider = ({ children }: { children: React.ReactNode }) => {
+export const WatchlistProvider = ({
+  children,
+}: {
+  children: ReactNode;
+}) => {
   const { user } = useAuth();
-  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const initialized = useRef(false);
 
-  const fetchWatchlist = async () => {
-    if (!user) return;
-    
+  const [watchlist, setWatchlist] = useState<
+    WatchlistItem[]
+  >([]);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(
+    null,
+  );
+
+  const fetchWatchlist = useCallback(async () => {
+    if (!user) {
+      setWatchlist([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
+
       const data = await getWatchlist();
+
       setWatchlist(data);
       setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Erreur inconnue',
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const handleAddToWatchlist = async (item: Omit<WatchlistItem, 'animeTitle' | 'animeImage'>) => {
-    if (!user) throw new Error('Non connecté');
-    
+  const handleAddToWatchlist = async (
+    item: NewWatchlistItem,
+  ): Promise<WatchlistItem> => {
+    if (!user) {
+      throw new Error('Non connecté');
+    }
+
     try {
       setLoading(true);
+
       const newItem = await apiAddToWatchlist(item);
-      setWatchlist(prev => [...prev, newItem]);
+
+      setWatchlist((previousWatchlist) => [
+        ...previousWatchlist,
+        newItem,
+      ]);
+
       return newItem;
-    } catch (err) {
-      const error = err as Error;
-      if (error.message.includes('409')) {
-        throw new Error('Cet anime est déjà dans votre watchlist');
+    } catch (caughtError) {
+      const addError =
+        caughtError instanceof Error
+          ? caughtError
+          : new Error('Erreur inconnue');
+
+      if (addError.message.includes('409')) {
+        throw new Error(
+          'Cet anime est déjà dans votre watchlist',
+        );
       }
-      throw error;
+
+      throw addError;
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRemoveFromWatchlist = async (animeId: number) => {
+  const handleRemoveFromWatchlist = async (
+    animeId: number,
+  ): Promise<void> => {
     try {
       setLoading(true);
+
       await apiRemoveFromWatchlist(animeId);
-      setWatchlist(prev => prev.filter(item => item.animeId !== animeId));
-    } catch (err) {
-      const error = err as Error;
-      setError(`Erreur suppression: ${error.message}`);
-      throw error;
+
+      setWatchlist((previousWatchlist) =>
+        previousWatchlist.filter(
+          (item) => item.animeId !== animeId,
+        ),
+      );
+    } catch (caughtError) {
+      const removeError =
+        caughtError instanceof Error
+          ? caughtError
+          : new Error('Erreur inconnue');
+
+      setError(
+        `Erreur suppression: ${removeError.message}`,
+      );
+
+      throw removeError;
     } finally {
       setLoading(false);
     }
   };
 
   const handleUpdateItem = async (
-    animeId: number, 
-    updates: Partial<Omit<WatchlistItem, 'animeId' | 'animeTitle' | 'animeImage'>>
-  ) => {
+    animeId: number,
+    updates: Partial<EditableWatchlistFields>,
+  ): Promise<void> => {
     try {
       setLoading(true);
-      const updatedItem = await apiUpdateWatchlistItem(animeId, updates);
-      setWatchlist(prev => prev.map(item => 
-        item.animeId === animeId ? { ...item, ...updatedItem } : item
-      ));
-    } catch (err) {
-      const error = err as Error;
-      setError(`Erreur mise à jour: ${error.message}`);
-      throw error;
+
+      const updatedItem =
+        await apiUpdateWatchlistItem(
+          animeId,
+          updates,
+        );
+
+      setWatchlist((previousWatchlist) =>
+        previousWatchlist.map((item) =>
+          item.animeId === animeId
+            ? { ...item, ...updatedItem }
+            : item,
+        ),
+      );
+    } catch (caughtError) {
+      const updateError =
+        caughtError instanceof Error
+          ? caughtError
+          : new Error('Erreur inconnue');
+
+      setError(
+        `Erreur mise à jour: ${updateError.message}`,
+      );
+
+      throw updateError;
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (user && !initialized.current) {
-      initialized.current = true;
-      fetchWatchlist();
-    }
-  }, [user]);
+    void fetchWatchlist();
+  }, [fetchWatchlist]);
 
   return (
-    <WatchlistContext.Provider value={{
-      watchlist,
-      loading,
-      error,
-      addToWatchlist: handleAddToWatchlist,
-      removeFromWatchlist: handleRemoveFromWatchlist,
-      updateWatchlistItem: handleUpdateItem,
-      fetchWatchlist
-    }}>
+    <WatchlistContext.Provider
+      value={{
+        watchlist,
+        loading,
+        error,
+        addToWatchlist: handleAddToWatchlist,
+        removeFromWatchlist:
+          handleRemoveFromWatchlist,
+        updateWatchlistItem: handleUpdateItem,
+        fetchWatchlist,
+      }}
+    >
       {children}
     </WatchlistContext.Provider>
   );
 };
 
-export const useWatchlist = () => {
-  const context = useContext(WatchlistContext);
-  if (!context) {
-    throw new Error('useWatchlist must be used within a WatchlistProvider');
-  }
-  return context;
-};
+// eslint-disable-next-line react-refresh/only-export-components
+export const useWatchlist =
+  (): WatchlistContextType => {
+    const context = useContext(WatchlistContext);
+
+    if (!context) {
+      throw new Error(
+        'useWatchlist must be used within a WatchlistProvider',
+      );
+    }
+
+    return context;
+  };

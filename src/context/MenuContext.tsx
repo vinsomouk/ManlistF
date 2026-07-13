@@ -1,4 +1,9 @@
-import React, { createContext, useState, useContext, type ReactNode } from 'react';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  type ReactNode,
+} from 'react';
 
 interface MenuContextType {
   isMobileMenuOpen: boolean;
@@ -8,14 +13,21 @@ interface MenuContextType {
   toggleSidebar: () => void;
 }
 
-const MenuContext = createContext<MenuContextType | undefined>(undefined);
+const MenuContext = createContext<MenuContextType | undefined>(
+  undefined,
+);
 
-export const MenuProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+export const MenuProvider: React.FC<{
+  children: ReactNode;
+}> = ({ children }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] =
+    useState(false);
+
+  const [isSidebarOpen, setIsSidebarOpen] =
+    useState(false);
 
   const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+    setIsMobileMenuOpen((isOpen) => !isOpen);
   };
 
   const closeMobileMenu = () => {
@@ -23,7 +35,7 @@ export const MenuProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+    setIsSidebarOpen((isOpen) => !isOpen);
   };
 
   return (
@@ -41,10 +53,15 @@ export const MenuProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 };
 
-export const useMenu = () => {
+// eslint-disable-next-line react-refresh/only-export-components
+export const useMenu = (): MenuContextType => {
   const context = useContext(MenuContext);
+
   if (!context) {
-    throw new Error('useMenu must be used within a MenuProvider');
+    throw new Error(
+      'useMenu must be used within a MenuProvider',
+    );
   }
+
   return context;
 };
