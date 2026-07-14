@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-
+import { API_URL } from '../../config/api';
 import type { User } from '../components/services/auth';
 
 import {
@@ -177,7 +177,7 @@ export const useAuth = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/api/questionnaires/${questionnaireId}/completed`,
+        `${API_URL}/questionnaires/${questionnaireId}/completed`,
         {
           credentials: 'include',
         },

@@ -1,5 +1,6 @@
-const API_URL = 'http://localhost:8000/api/auth';
-const PROFILE_API_URL = 'http://localhost:8000/api/profile';
+const AUTH_API_URL = `${API_URL}/auth`;
+const PROFILE_API_URL = `${API_URL}/profile`;
+  import { API_URL } from '../../../config/api';
 
 export interface User {
   id: string;
@@ -107,7 +108,7 @@ export const register = async (
   password: string,
   profilePicture?: string | null,
 ): Promise<User> => {
-  const response = await fetch(`${API_URL}/register`, {
+  const response = await fetch(`${AUTH_API_URL}/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

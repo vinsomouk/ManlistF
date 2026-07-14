@@ -3,7 +3,7 @@ import {
   useParams,
   useNavigate,
 } from 'react-router-dom';
-
+import { API_URL } from '../../../config/api';
 import Header from '../../components/MainComponents/Header';
 import '../../styles/Questionnaire/QuestionnairePage.css';
 
@@ -70,7 +70,7 @@ const QuestionnairePage = () => {
 
       try {
         const response = await fetch(
-          `http://localhost:8000/api/questionnaires/${id}`,
+          `${API_URL}/questionnaires/${id}`,
           {
             credentials: 'include',
             headers: {
@@ -142,7 +142,7 @@ const QuestionnairePage = () => {
       };
 
       const response = await fetch(
-        `http://localhost:8000/api/questionnaires/${id}/submit`,
+        `${API_URL}/questionnaires/${id}/submit`,
         {
           method: 'POST',
           headers: {

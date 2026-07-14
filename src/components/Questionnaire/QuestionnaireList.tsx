@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import Header from '../MainComponents/Header';
 import '../../styles/Questionnaire/QuestionnaireList.css';
+import { API_URL } from '../../../config/api';
 
 interface Questionnaire {
   id: number;
@@ -20,7 +21,7 @@ const QuestionnaireList = () => {
   useEffect(() => {
     const fetchQuestionnaires = async () => {
   try {
-    const response = await fetch('http://localhost:8000/api/questionnaires', {
+    const response = await fetch(`${API_URL}/questionnaires`, {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',

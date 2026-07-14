@@ -3,8 +3,7 @@ import { useAuth, type User } from '../../hooks/useAuth';
 import Header from '../../components/MainComponents/Header';
 import '../../styles/User/Profile.css';
 import defaultAvatar from '../../assets/braver-blank-pfp.jpg';
-
-const API_BASE_URL = 'http://localhost:8000';
+import { API_BASE_URL } from '../../../config/api';
 
 const getImageUrl = (path?: string | null) => {
   if (!path) return defaultAvatar;

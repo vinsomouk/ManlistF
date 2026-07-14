@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/Questionnaire/QuestionnairePromo.css';
+import { API_URL } from '../../../config/api';
 
 interface QuestionnaireResponse {
   questionnaire?: {
@@ -24,7 +25,7 @@ const QuestionnairePromo = () => {
 
       try {
         const response = await fetch(
-          `http://localhost:8000/api/user/${user.id}/responses`,
+          `${API_URL}/user/${user.id}/responses`,
           {
             credentials: 'include',
             headers: {

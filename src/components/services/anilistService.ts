@@ -1,6 +1,6 @@
 const ANILIST_API_URL = 'https://graphql.anilist.co';
-const WATCHLIST_API_URL =
-  'http://localhost:8000/api/watchlist';
+const WATCHLIST_API_URL = `${API_URL}/watchlist`;
+  import { API_URL } from '../../../config/api';
 
 type MediaFormat =
   | 'TV'
