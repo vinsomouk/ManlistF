@@ -1,221 +1,428 @@
-Manlist - Watchlist Interactive d'Animés
+# 🎬 Manlist Frontend
 
-Manlist est une application web qui permet aux utilisateurs de gérer leur watchlist d'animés, de recevoir des recommandations personnalisées et de découvrir de nouveaux contenus.
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript)
+![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![Jenkins](https://img.shields.io/badge/Jenkins-D24939?logo=jenkins&logoColor=white)
+![Render](https://img.shields.io/badge/Hosted%20on-Render-46E3B7)
+![License](https://img.shields.io/badge/License-Educational-green)
 
-Fonctionnalités Clés
-✅ Gestion de watchlist personnalisée
-✅ Système de recommandations basé sur des questionnaires
-✅ Recherche et filtrage avancé d'animés
-✅ Profil utilisateur avec synchronisation
-✅ Interface responsive et moderne
-✅ Suite complète de tests automatisés
-Prérequis
-Node.js 18+
-Docker 20.10+
-Jenkins 2.4+ (optionnel pour CI/CD)
-npm 9+
-Installation Locale
-Cloner le dépôt
+---
 
+# 📖 Présentation
 
+**Manlist** est une plateforme web permettant aux utilisateurs de gérer leur watchlist d'animés, de répondre à des questionnaires afin d'obtenir des recommandations personnalisées et de suivre leur progression.
 
-git clone https://github.com/votre-utilisateur/manlist-front.git
-cd manlist-front
-Installer les dépendances
+Ce dépôt contient le **frontend** développé avec **React**, **TypeScript** et **Vite**.
 
+L'application communique avec une API REST développée avec Symfony.
 
+---
 
+# 🚀 Fonctionnalités
+
+| Fonctionnalité | Statut |
+|---------------|:------:|
+| Connexion | ✅ |
+| Inscription | ✅ |
+| Déconnexion | ✅ |
+| Gestion du profil | ✅ |
+| Upload d'image de profil | ✅ |
+| Watchlist | ✅ |
+| Consultation des questionnaires | ✅ |
+| Réponses aux questionnaires | ✅ |
+| Recommandations personnalisées | ✅ |
+| Responsive Design | ✅ |
+
+---
+
+# 🏗 Architecture
+
+```
+Utilisateur
+
+↓
+
+React + TypeScript
+
+↓
+
+Hooks / Context
+
+↓
+
+Services API
+
+↓
+
+Symfony REST API
+
+↓
+
+PostgreSQL
+```
+
+---
+
+# 🛠 Technologies
+
+- React
+- TypeScript
+- Vite
+- React Router
+- Fetch API
+- CSS
+- Docker
+- Jenkins
+- Docker Hub
+- Render
+
+---
+
+# 📂 Structure du projet
+
+```
+Manlist-Front
+│
+├── public/
+├── src/
+│   ├── assets/
+│   ├── components/
+│   ├── config/
+│   ├── context/
+│   ├── hooks/
+│   ├── pages/
+│   ├── services/
+│   ├── styles/
+│   └── utils/
+│
+├── Jenkinsfile
+├── Manlist_Front.Dockerfile
+├── package.json
+├── vite.config.ts
+└── nginx.conf
+```
+
+---
+
+# ⚙ Installation
+
+## Prérequis
+
+- Node.js 20+
+- npm
+- Docker (optionnel)
+
+## Cloner le dépôt
+
+```bash
+git clone https://github.com/vinsomouk/ManlistF.git
+
+cd Manlist-Front
+```
+
+## Installer les dépendances
+
+```bash
 npm install
-Configurer les variables d'environnement
-Créer un fichier .env à la racine :
+```
 
-env
+## Variables d'environnement
 
+Créer un fichier `.env` :
 
+```env
 VITE_API_BASE_URL=http://localhost:8000
-VITE_ANILIST_API_URL=https://graphql.anilist.co
-Démarrer l'application
+```
 
+En production :
 
+```env
+VITE_API_BASE_URL=https://manlist-back.onrender.com
+```
 
+## Lancer le serveur de développement
+
+```bash
 npm run dev
-L'application sera disponible sur : http://localhost:5173
+```
 
-Suite de Tests
-Structure des tests
+L'application sera disponible sur :
 
+```
+http://localhost:5173
+```
 
-src/
-├── test/
-│   └── setup.ts
-├── components/
-│   └── Questionnaire/
-│       └── __tests__/
-│           └── QuestionnaireList.test.tsx
-└── [autres composants avec leurs tests]
-Commandes de test
+---
 
+# 🧪 Vérifications
 
+Analyse du code :
 
-# Exécuter tous les tests
-npm run test
+```bash
+npm run lint
+```
 
-# Exécuter les tests avec UI
-npm run test:ui
+Compilation de production :
 
-# Générer un rapport de couverture
-npm run test:coverage
+```bash
+npm run build
+```
 
-# Mode watch pour le développement
-npm run test:watch
+Prévisualisation :
 
-# Exécuter des tests spécifiques
-npm run test:ui src/components/ApiComponents/AnimeList.test.tsx
-Objectifs de couverture
-Composants: 100% coverage
-Hooks: 100% coverage
-Services: 100% coverage
-Utilitaires: 100% coverage
-Pages: 90%+ coverage
-Stratégie de test
-Tests unitaires - Fonctionnalité individuelle des composants
-Tests d'intégration - Interactions entre composants
-Tests de sécurité - Validation des entrées, protection CSRF
-Tests de performance - Charge et temps de réponse
+```bash
+npm run preview
+```
+
+---
+
+# 🌐 Communication avec l'API
+
+Toutes les requêtes HTTP utilisent la variable :
+
+```
+VITE_API_BASE_URL
+```
+
+Exemples :
+
+```
+POST /api/auth/login
+
+POST /api/auth/register
+
+GET /api/auth/check
+
+GET /api/watchlist
+
+POST /api/questionnaires/{id}/submit
+```
+
+Cette configuration permet d'utiliser la même application aussi bien en développement qu'en production.
+
+---
+
+# 🐳 Docker
+
+Construire l'image :
+
+```bash
+docker build \
+-f Manlist_Front.Dockerfile \
+-t manlist-front .
+```
+
+Lancer :
+
+```bash
+docker run \
+-p 8080:80 \
+manlist-front
+```
+
+---
+
+# 🔒 Sécurité
+
+Le frontend applique plusieurs bonnes pratiques :
+
+- Communication HTTPS en production
+- Variables d'environnement
+- Gestion des erreurs API
+- Validation des formulaires
+- Authentification par session
+- Cookies sécurisés (gérés par le backend)
+- CORS sécurisé
+
+---
+
+# 🔍 Analyse des dépendances
+
+Audit npm :
+
+```bash
+npm audit
+```
+
+Les vulnérabilités sont contrôlées avant les déploiements.
+
+---
+
+# 🔄 CI/CD
+
+Le pipeline Jenkins automatise :
+
+```
+Checkout
+
+↓
+
+Installation npm
+
+↓
+
+Lint
+
+↓
+
+Build Vite
+
+↓
+
+Build Docker
+
+↓
+
+Scan Trivy
+
+↓
+
+Push Docker Hub
+```
+
+---
+
+# 🐳 Docker Hub
+
+Image publiée :
+
+```
+vmk700/manlist-front
+```
+
+Tags :
+
+```
+latest
+
+BUILD_NUMBER
+```
+
+---
+
+# ☁ Déploiement
+
+Le frontend est hébergé sur **Render**.
+
+Lors de chaque déploiement :
+
+- installation des dépendances
+- build Vite
+- génération des fichiers statiques
+- publication automatique
+
+---
+
+# 🌍 Variables d'environnement
+
+| Variable | Description |
+|----------|-------------|
+| VITE_API_BASE_URL | URL de l'API Symfony |
+
+---
+
+# 📌 Commandes utiles
+
+Installation :
+
+```bash
+npm install
+```
+
+Développement :
+
+```bash
+npm run dev
+```
+
+Lint :
+
+```bash
+npm run lint
+```
+
+Build :
+
+```bash
+npm run build
+```
+
+Prévisualisation :
+
+```bash
+npm run preview
+```
+
+Audit :
+
+```bash
+npm audit
+```
+
+---
+
+# 🚀 Déploiement continu
+
+Le projet est compatible avec un pipeline CI/CD basé sur :
+
+```
+Développeur
+
+↓
+
+GitHub
+
+↓
+
+Webhook (compatible)
+
+↓
+
+Jenkins
+
+↓
+
+Lint
+
+↓
+
+Build
+
+↓
+
 Docker
-Construire l'image Docker de l'application
 
+↓
 
+Trivy
 
-docker build -t manlist-front -f docker/App_Dockerfile .
-Construire l'image Docker de l'agent Jenkins
+↓
 
+Docker Hub
 
+↓
 
-docker build -t agent_manlist_front -f docker/Agent_Dockerfile .
-Lancer le conteneur d'application
+Render
+```
 
+---
 
+# 📈 Évolutions possibles
 
-docker run -d -p 8080:80 --name manlist-front manlist-front
-Accéder à : http://localhost:8080
+- Tests unitaires React (Vitest)
+- Tests end-to-end (Playwright)
+- OAuth (Google, Discord)
+- Mode sombre
+- Notifications
+- Internationalisation
+- Progressive Web App (PWA)
 
-Configuration Jenkins
-Prérequis
-Serveur Jenkins avec Docker installé
-Agent avec le tag "Agent_Manlist_Front"
-Étapes d'installation
-Configurer dans Jenkins :
+---
 
-Aller dans "Manage Jenkins" > "Nodes and Clouds"
-Créer un nouveau node permanent
-Nom: "Agent_Manlist_Front"
-Labels: "Agent_Manlist_Front"
-Lanceur: "Launch agent via execution of command on the controller"
-Commande :
+# 👨‍💻 Auteur
 
+Projet réalisé dans le cadre du **Titre Professionnel Concepteur Développeur d'Applications (CDA)**.
 
-
-docker run -i --rm -v /var/run/docker.sock:/var/run/docker.sock agent_manlist_front
-Configurer les credentials
-Docker Registry: Ajouter un secret "docker-creds"
-Serveur de staging: Ajouter une clé SSH "staging-server-creds"
-Créer un nouveau pipeline
-Sélectionner "Pipeline script from SCM"
-SCM: Git
-Repository URL: https://github.com/votre-utilisateur/manlist-front.git
-Script Path: Jenkinsfile
-Déclencher le pipeline
-Manuellement via l'interface Jenkins
-Automatiquement à chaque push sur la branche main
-Jenkinsfile (Pipeline CI/CD)
-groovy
-
-
-pipeline {
-    agent {
-        label 'Agent_Manlist_Front'
-    }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Install & Test') {
-            steps {
-                sh 'npm install'
-                sh 'npm run test:coverage'
-            }
-        }
-
-        stage('Build Production') {
-            steps {
-                sh 'npm run build'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    docker.build("manlist-front:${env.BUILD_ID}")
-                }
-            }
-        }
-        
-        stage('Deploy to Staging') {
-            when {
-                branch 'main'
-            }
-            steps {
-                sh 'docker-compose up -d --build'
-            }
-        }
-    }
-}
-Structure des Fichiers
-
-
-manlist-front/
-├── src/                 # Code source principal
-├── test/                # Configuration des tests
-├── docker/              # Fichiers Docker
-│   ├── Agent_Dockerfile
-│   └── App_Dockerfile
-├── Jenkinsfile          # Configuration du pipeline CI/CD
-├── nginx.conf           # Configuration Nginx
-├── vite.config.ts       # Configuration Vite
-├── package.json         # Dépendances et scripts
-└── vitest.config.ts     # Configuration Vitest
-Technologies Utilisées
-Frontend: React 18, TypeScript, Vite
-Testing: Vitest, React Testing Library
-CI/CD: Jenkins, Docker
-État global: Con API
-Routing: React Router
-Styling: CSS Modules
-Contribuer
-Créer une nouvelle branche
-
-
-
-git checkout -b feature/nouvelle-fonctionnalite
-Écrire les tests associés
-
-// Exemple de test pour un nouveau composant
-import { describe, it, expect } from 'vitest';
-...
-Commiter les changements
-
-
-
-git commit -am "Ajout nouvelle fonctionnalité avec tests"
-Pousser la branche
-
-
-
-git push origin feature/nouvelle-fonctionnalite
-Ouvrir une Pull Request sur GitHub
-Cette version regroupe toutes les informations dans un seul script tout en améliorant la lisibilité et la structure.
+Développé par **Khalidou Diakité**.
