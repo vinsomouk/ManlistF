@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Dépendances et builds locaux
+node_modules
+dist
+coverage
+
+# Fichiers de logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Variables d'environnement
+.env
+.env.*
+!.env.example
+
+# Éditeurs
+.vscode
+.idea
+
+# Système
+.DS_Store
+Thumbs.db
+
+# Jenkins
+JenkinsAgent
+
+# Documentation inutile pendant le build
+README.md
+
+# Anciens fichiers de test ou configuration Jest
+jest.config.*
+jest.setup.*
+cssTransform.*

@@ -50,6 +50,15 @@ pipeline {
             }
         }
 
+        stage('Dependency Security Audit') {
+            steps {
+                sh '''
+                    echo "Audit des dépendances frontend de production..."
+                    npm audit --omit=dev --audit-level=high
+                '''
+            }
+        }
+
         stage('Build') {
             steps {
                 sh 'npm run build'
@@ -58,6 +67,19 @@ pipeline {
                     artifacts: 'dist/**',
                     fingerprint: true
                 )
+            }
+        }
+
+        stage('Scan Docker Configuration') {
+            steps {
+                sh '''
+                    docker run --rm \
+                        -v "$PWD:/workspace" \
+                        aquasec/trivy:latest config \
+                        --severity HIGH,CRITICAL \
+                        --exit-code 1 \
+                        /workspace
+                '''
             }
         }
 
@@ -72,15 +94,18 @@ pipeline {
             }
         }
 
-        stage('Security Scan') {
-            when {
-                expression {
-                    return false
-                }
-            }
-
+        stage('Scan Docker Image') {
             steps {
-                sh 'npm audit --omit=dev --audit-level=high'
+                sh '''
+                    docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        -v trivy-cache:/root/.cache/ \
+                        aquasec/trivy:latest image \
+                        --severity HIGH,CRITICAL \
+                        --ignore-unfixed \
+                        --exit-code 1 \
+                        "${DOCKER_IMAGE}:${BUILD_NUMBER}"
+                '''
             }
         }
 
@@ -111,7 +136,7 @@ pipeline {
             }
 
             steps {
-                echo 'Déploiement à configurer plus tard'
+                echo 'Déploiement à configurer après préparation de la VM'
             }
         }
     }
