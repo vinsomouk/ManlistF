@@ -85,30 +85,25 @@ pipeline {
         }
 
         stage('Push Registry') {
-    when {
-        branch 'main'
-    }
-
-    steps {
-        script {
-            docker.withRegistry(
-                'https://index.docker.io/v1/',
-                'dockerhub-creds'
-            ) {
-                docker.image(
-                    "${DOCKER_IMAGE}:${BUILD_NUMBER}"
-                ).push()
-
-                docker.image(
-                    "${DOCKER_IMAGE}:${BUILD_NUMBER}"
-                ).push('latest')
+            when {
+                branch 'main'
             }
-        }
-    }
-}
 
             steps {
-                echo 'Push Docker à configurer plus tard'
+                script {
+                    docker.withRegistry(
+                        'https://index.docker.io/v1/',
+                        'dockerhub-creds'
+                    ) {
+                        docker.image(
+                            "${DOCKER_IMAGE}:${BUILD_NUMBER}"
+                        ).push()
+
+                        docker.image(
+                            "${DOCKER_IMAGE}:${BUILD_NUMBER}"
+                        ).push('latest')
+                    }
+                }
             }
         }
 
@@ -127,7 +122,7 @@ pipeline {
 
     post {
         success {
-            echo "Frontend construit : ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+            echo "Frontend construit et publié : ${DOCKER_IMAGE}:${BUILD_NUMBER}"
         }
 
         failure {
