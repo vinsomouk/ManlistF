@@ -85,10 +85,6 @@ pipeline {
         }
 
         stage('Push Registry') {
-            when {
-                branch 'main'
-            }
-
             steps {
                 script {
                     docker.withRegistry(
@@ -122,7 +118,7 @@ pipeline {
 
     post {
         success {
-            echo "Frontend construit et publié : ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+            echo "Pipeline frontend réussi : ${DOCKER_IMAGE}:${BUILD_NUMBER}"
         }
 
         failure {
