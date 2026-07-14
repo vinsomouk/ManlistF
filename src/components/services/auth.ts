@@ -1,6 +1,7 @@
+import { API_URL } from '../../../config/api';
+
 const AUTH_API_URL = `${API_URL}/auth`;
 const PROFILE_API_URL = `${API_URL}/profile`;
-  import { API_URL } from '../../../config/api';
 
 export interface User {
   id: string;
@@ -37,9 +38,7 @@ type AuthListener = (user: User | null) => void;
 let currentUser: User | null = null;
 let listeners: AuthListener[] = [];
 
-async function parseJson<T>(
-  response: Response,
-): Promise<T> {
+async function parseJson<T>(response: Response): Promise<T> {
   return response.json() as Promise<T>;
 }
 
@@ -149,7 +148,7 @@ export const login = async (
   email: string,
   password: string,
 ): Promise<User> => {
-  const response = await fetch(`${API_URL}/login`, {
+  const response = await fetch(`${AUTH_API_URL}/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -183,7 +182,7 @@ export const login = async (
 
 export const logout = async (): Promise<void> => {
   try {
-    await fetch(`${API_URL}/logout`, {
+    await fetch(`${AUTH_API_URL}/logout`, {
       method: 'POST',
       credentials: 'include',
     });
@@ -211,7 +210,7 @@ export const logout = async (): Promise<void> => {
 export const checkAuth =
   async (): Promise<User | null> => {
     try {
-      const response = await fetch(`${API_URL}/check`, {
+      const response = await fetch(`${AUTH_API_URL}/check`, {
         credentials: 'include',
       });
 
